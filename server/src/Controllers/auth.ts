@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import { createUser, getUserByEmail } from "../DAL/users";
 import { Response, Request, NextFunction } from "express";
 import { VerifyErrors } from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
 
 interface UserProps {
   _id: string;
@@ -16,7 +17,9 @@ interface UserProps {
 interface JwtPayload {
   _id: string;
 }
+
 const router = express.Router();
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const extractUserProps = (user: any): UserProps => ({
   _id: user._id,
@@ -101,105 +104,119 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-router.post(
-  "/logout",
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const authHeaders = req.headers["authorization"];
-    const token = authHeaders && authHeaders.split(" ")[1];
+router.post("/logout", async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const authHeaders = req.headers["authorization"];
+  const token = authHeaders && authHeaders.split(" ")[1];
 
-    if (!token) {
-      res.sendStatus(401);
+  if (!token) {
+    res.sendStatus(401);
+    return;
+  }
+
+  jwt.verify(token as string, process.env.REFRESH_TOKEN_SECRET!, async (err: VerifyErrors | null, userInfo: any) => {
+    if (err) {
+      res.status(403).send(err.message);
       return;
     }
 
-    jwt.verify(
-      token as string,
-      process.env.REFRESH_TOKEN_SECRET!,
-      async (err: VerifyErrors | null, userInfo: any) => {
-        if (err) {
-          res.status(403).send(err.message);
-          return;
-        }
+    const userId = (userInfo as JwtPayload)._id;
+    try {
+      const user = await User.findById(userId);
+      if (!user) return res.status(403).send("Invalid request");
 
-        const userId = (userInfo as JwtPayload)._id;
-        try {
-          const user = await User.findById(userId);
-          if (!user) return res.status(403).send("Invalid request");
+      if (!user.tokens.includes(token)) {
+        user.tokens = [];
+        await user.save();
+        return res.status(403).send("Invalid request");
+      }
 
-          if (!user.tokens.includes(token)) {
-            user.tokens = [];
-            await user.save();
-            return res.status(403).send("Invalid request");
-          }
+      user.tokens.splice(user.tokens.indexOf(token), 1);
+      await user.save();
 
-          user.tokens.splice(user.tokens.indexOf(token), 1);
-          await user.save();
-
-          res.status(200).send();
-          return;
-        } catch (err: any) {
-          res.status(403).send({ message: err.message });
-          return;
-        }
-      },
-    );
-  },
-);
-
-router.post(
-  "/refreshToken",
-  async (req: Request, res: Response): Promise<void> => {
-    const authHeaders = req.headers["authorization"];
-    const token = authHeaders && authHeaders.split(" ")[1];
-
-    if (!token) {
-      res.sendStatus(401);
+      res.status(200).send();
+      return;
+    } catch (err: any) {
+      res.status(403).send({ message: err.message });
       return;
     }
+  });
+});
 
-    jwt.verify(
-      token as string,
-      process.env.REFRESH_TOKEN_SECRET!,
-      async (err: VerifyErrors | null, userInfo: any) => {
-        if (err) return res.status(403).send(err.message);
+router.post("/refreshToken", async (req: Request, res: Response): Promise<void> => {
+  const authHeaders = req.headers["authorization"];
+  const token = authHeaders && authHeaders.split(" ")[1];
 
-        const userId = (userInfo as JwtPayload)._id;
-        try {
-          const user = await User.findById(userId);
-          if (!user) return res.status(403).send("Invalid request");
+  if (!token) {
+    res.sendStatus(401);
+    return;
+  }
 
-          if (!user.tokens.includes(token)) {
-            user.tokens = [];
-            await user.save();
-            return res.status(403).send("Invalid request");
-          }
+  jwt.verify(token as string, process.env.REFRESH_TOKEN_SECRET!, async (err: VerifyErrors | null, userInfo: any) => {
+    if (err) return res.status(403).send(err.message);
 
-          const accessToken = jwt.sign(
-            { _id: user._id },
-            process.env.ACCESS_TOKEN_SECRET!,
-            { expiresIn: process.env.JWT_TOKEN_EXPIRATION! },
-          );
+    const userId = (userInfo as JwtPayload)._id;
+    try {
+      const user = await User.findById(userId);
+      if (!user) return res.status(403).send("Invalid request");
 
-          const refreshToken = jwt.sign(
-            { _id: user._id },
-            process.env.REFRESH_TOKEN_SECRET!,
-          );
+      if (!user.tokens.includes(token)) {
+        user.tokens = [];
+        await user.save();
+        return res.status(403).send("Invalid request");
+      }
 
-          user.tokens[user.tokens.indexOf(token)] = refreshToken;
-          await user.save();
+      const accessToken = jwt.sign(
+        { _id: user._id },
+        process.env.ACCESS_TOKEN_SECRET!,
+        { expiresIn: process.env.JWT_TOKEN_EXPIRATION! },
+      );
 
-          res.status(200).send({
-            accessToken,
-            refreshToken,
-          });
-          return;
-        } catch (err: any) {
-          res.status(403).send(err.message);
-          return;
-        }
-      },
-    );
-  },
-);
+      const refreshToken = jwt.sign(
+        { _id: user._id },
+        process.env.REFRESH_TOKEN_SECRET!,
+      );
+
+      user.tokens[user.tokens.indexOf(token)] = refreshToken;
+      await user.save();
+
+      res.status(200).send({
+        accessToken,
+        refreshToken,
+      });
+      return;
+    } catch (err: any) {
+      res.status(403).send(err.message);
+      return;
+    }
+  });
+});
+
+router.post("/google", async (req: Request, res: Response) => {
+  try {
+    const { token } = req.body;
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const { email, name, sub } = ticket.getPayload()!;
+
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = new User({ username: name, email, googleId: sub });
+      await user.save();
+    }
+
+    const accessToken = jwt.sign({ _id: user._id }, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: process.env.JWT_TOKEN_EXPIRATION! });
+    const refreshToken = jwt.sign({ _id: user._id }, process.env.REFRESH_TOKEN_SECRET!);
+
+    user.tokens.push(refreshToken);
+    await user.save();
+
+    res.json({ accessToken, refreshToken });
+  } catch (error) {
+    res.status(401).json({ error: "Invalid Google token" });
+  }
+});
 
 export default router;

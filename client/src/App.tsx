@@ -1,23 +1,48 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/LoginPage";
-import Home from "./pages/HomePage";
+import {
+  Navigate,
+  Route,
+  BrowserRouter as Router,
+  Routes,
+} from "react-router-dom";
 
+import { HomePage } from "./pages/HomePage";
+import { LoginPage } from "./pages/LoginPage";
+import { isValidToken } from "./utils/auth";
 
-function App() {
+const App = () => {
   const PrivateRoute = ({ children }: { children: JSX.Element }) => {
-    return localStorage.getItem("accessToken") ? children : <Navigate to="/login" />;
+    return localStorage.getItem("accessToken") ? (
+      children
+    ) : (
+      <Navigate to="/login" />
+    );
   };
-  
- 
+
   return (
     <Router>
- <Routes>
-    <Route path="/" element={<Navigate to="/login" />} />
-    <Route path="/login" element={<Login />} />
-    <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
-  </Routes>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            isValidToken(localStorage.getItem("accessToken")) ? (
+              <Navigate to="/home" />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/home"
+          element={
+            <PrivateRoute>
+              <HomePage />
+            </PrivateRoute>
+          }
+        />
+      </Routes>
     </Router>
   );
-}
+};
 
 export default App;
