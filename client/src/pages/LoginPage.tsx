@@ -25,7 +25,7 @@ export default function LoginPage() {
       const response = await axios.post(endpoint, payload);
       localStorage.setItem("accessToken", response.data.accessToken);
       localStorage.setItem("refreshToken", response.data.refreshToken);
-      navigate("home")
+      navigate("/home")
     } 
     catch (err) 
     {
