@@ -17,7 +17,7 @@ export const LoginPage = () => {
   const serverId = import.meta.env.VITE_SERVER_URL;
 
   const navigate = useNavigate();
-  const {setTokens} = useAuthTokens();
+  const { setTokens } = useAuthTokens();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +33,7 @@ export const LoginPage = () => {
 
     try {
       const response = await axios.post(endpoint, payload);
-      setTokens(response.data.accessToken, response.data.refreshToken)
+      setTokens(response.data.accessToken, response.data.refreshToken);
       navigate("/home");
     } catch (err) {
       const error = err as APIError;
@@ -49,7 +49,7 @@ export const LoginPage = () => {
         token: credentialResponse.credential,
       });
 
-      setTokens(response.data.accessToken, response.data.refreshToken)
+      setTokens(response.data.accessToken, response.data.refreshToken);
       navigate("/home");
     } catch (err) {
       const error = err as APIError;

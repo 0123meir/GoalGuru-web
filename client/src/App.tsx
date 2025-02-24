@@ -5,20 +5,15 @@ import {
   Routes,
 } from "react-router-dom";
 
+import useAuthTokens from "./hooks/useAuthTokens";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { isValidToken } from "./utils/auth";
-import useAuthTokens from "./hooks/useAuthTokens";
 
 const App = () => {
-
-  const {getTokens} = useAuthTokens()
+  const { getTokens } = useAuthTokens();
   const PrivateRoute = ({ children }: { children: JSX.Element }) => {
-    return getTokens().accessToken ? (
-      children
-    ) : (
-      <Navigate to="/login" />
-    );
+    return getTokens().accessToken ? children : <Navigate to="/login" />;
   };
 
   return (

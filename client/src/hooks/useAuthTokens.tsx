@@ -1,4 +1,4 @@
-import useLocalStorage from "./useLocalStorage"; 
+import useLocalStorage from "./useLocalStorage";
 
 function useAuthTokens() {
   const accessTokenStorage = useLocalStorage<string | null>("accessToken");
@@ -9,7 +9,10 @@ function useAuthTokens() {
     refreshToken: refreshTokenStorage.getItem(),
   });
 
-  const setTokens = (accessToken: string | null, refreshToken: string | null) => {
+  const setTokens = (
+    accessToken: string | null,
+    refreshToken: string | null
+  ) => {
     accessTokenStorage.setItem(accessToken);
     refreshTokenStorage.setItem(refreshToken);
   };
