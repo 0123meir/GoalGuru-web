@@ -1,11 +1,12 @@
+import useAuthTokens from "@/hooks/useAuthTokens";
 import { useNavigate } from "react-router-dom";
 
 export const HomePage = () => {
   const navigate = useNavigate();
+  const {clearTokens} = useAuthTokens();
 
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
+    clearTokens();
     navigate("/login");
   };
 

@@ -1,3 +1,4 @@
+import useAuthTokens from "@/hooks/useAuthTokens";
 import { APIError } from "@/types/api";
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import { GoogleCredentialResponse } from "@react-oauth/google";
@@ -16,6 +17,7 @@ export const LoginPage = () => {
   const serverId = import.meta.env.VITE_SERVER_URL;
 
   const navigate = useNavigate();
+  const {setTokens} = useAuthTokens();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,8 +33,7 @@ export const LoginPage = () => {
 
     try {
       const response = await axios.post(endpoint, payload);
-      localStorage.setItem("accessToken", response.data.accessToken);
-      localStorage.setItem("refreshToken", response.data.refreshToken);
+      setTokens(response.data.accessToken, response.data.refreshToken)
       navigate("/home");
     } catch (err) {
       const error = err as APIError;
@@ -48,8 +49,7 @@ export const LoginPage = () => {
         token: credentialResponse.credential,
       });
 
-      localStorage.setItem("accessToken", response.data.accessToken);
-      localStorage.setItem("refreshToken", response.data.refreshToken);
+      setTokens(response.data.accessToken, response.data.refreshToken)
       navigate("/home");
     } catch (err) {
       const error = err as APIError;
