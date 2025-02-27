@@ -30,6 +30,7 @@ export const HomePage = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
       <h1 className="text-3xl">Welcome to Home</h1>
+      <button onClick={() => navigate("/forum") } className="mt-4 bg-red-500 text-white p-2" >Forum</button>
       <button onClick={handleLogout} className="mt-4 bg-red-500 text-white p-2">
         Logout
       </button>
