@@ -5,6 +5,7 @@ import cors from "cors"
 
 import postRouter from "./Controllers/posts";
 import commentRouter from "./Controllers/comments";
+import likesRouter from "./Controllers/likes";
 import userRouter from "./Controllers/users";
 import authRouter from "./Controllers/auth";
 
@@ -26,6 +27,8 @@ app.use(cors({
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerOptions));
 app.use("/posts", postRouter);
 app.use("/comments", commentRouter);
+app.use("/likes", likesRouter);
+
 app.use("/users", userRouter);
 app.use("/auth", authRouter);
 

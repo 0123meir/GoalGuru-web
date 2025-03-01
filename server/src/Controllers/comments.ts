@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { Response } from "express";
 import mongoose from "mongoose";
 import {
   saveComment,
@@ -9,23 +9,25 @@ import {
   getCommentsByPostId,
 } from "../DAL/comments";
 import { getPostsById } from "../DAL/posts";
-import authenticate from "../Middlewares/authMiddleware";
+import authenticate, {
+  AuthenticatedRequest,
+} from "../Middlewares/authMiddleware";
 
 const router = express.Router();
 
 router.post(
   "/",
   authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const { content, senderId, postId } = req.body;
-      if (!content || !senderId || !postId) {
+      const { content, postId } = req.body;
+      const userId = req.user.id;
+      if (!content || !postId) {
         res.status(400).json("required body not provided");
         return;
       }
       if (
         typeof content !== "string" ||
-        typeof senderId !== "string" ||
         !mongoose.Types.ObjectId.isValid(postId)
       ) {
         res.status(400).json("wrong type in one of the body parameters");
@@ -38,7 +40,11 @@ router.post(
         return;
       }
 
-      const addedComment = await saveComment(req.body);
+      const addedComment = await saveComment({
+        content,
+        postId,
+        commentorId: userId,
+      });
 
       res.json({
         comment: "comment saved successfully",
@@ -50,13 +56,13 @@ router.post(
       res.status(500).json({ error: error.message });
       return;
     }
-  },
+  }
 );
 
 router.get(
   "/:id",
   authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const comment = await getCommentById(req.params.id);
 
@@ -72,13 +78,13 @@ router.get(
       res.status(500).json({ error: err.message });
       return;
     }
-  },
+  }
 );
 
 router.get(
   "/",
   authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const comments = await getAllComments();
       res.json(comments);
@@ -88,13 +94,13 @@ router.get(
       res.status(500).json({ error: err.message });
       return;
     }
-  },
+  }
 );
 
 router.put(
   "/:id",
   authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const newContent = req.body.content;
       if (!newContent) {
@@ -119,13 +125,13 @@ router.put(
       res.status(500).json({ error: err.message });
       return;
     }
-  },
+  }
 );
 
 router.delete(
   "/:id",
   authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
 
@@ -151,13 +157,13 @@ router.delete(
       res.status(500).json({ error: err.message });
       return;
     }
-  },
+  }
 );
 
 router.get(
   "/post/:postId",
   authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const { postId } = req.params;
 
@@ -187,7 +193,7 @@ router.get(
       res.status(500).json({ error: err.message });
       return;
     }
-  },
+  }
 );
 
 export default router;

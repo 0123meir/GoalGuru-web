@@ -1,11 +1,13 @@
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
-import authenticate from "../Middlewares/authMiddleware";
+import authenticate, {
+  AuthenticatedRequest,
+} from "../Middlewares/authMiddleware";
 import {
   savePost,
-  getAllPosts,
+  getRecentPosts,
   getPostsById,
-  getPostsBySenderId,
+  getPostsByPosterId,
   updatePostById,
 } from "../DAL/posts";
 
@@ -14,17 +16,17 @@ const router = express.Router();
 router.post(
   "/",
   authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const { message, senderId } = req.body;
+      const { description, posterId } = req.body;
 
-      if (!message || !senderId) {
+      if (!description || !posterId) {
         res.status(400).json("required body not provided");
         return;
       }
       if (
-        typeof message !== "string" ||
-        !mongoose.Types.ObjectId.isValid(senderId)
+        typeof description !== "string" ||
+        !mongoose.Types.ObjectId.isValid(posterId)
       ) {
         res.status(400).json("wrong type in one of the body parameters");
         return;
@@ -39,44 +41,45 @@ router.post(
       res.status(500).json({ error: error.message });
       return;
     }
-  },
+  }
 );
 
 router.get(
   "/",
   authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const posts = await getAllPosts();
-      res.json(posts);
+      const posts = await getRecentPosts(req.user.id);
+
+      res.status(200).json(posts);
       return;
     } catch (err) {
       console.log(err);
       res.status(500).json({ error: err.message });
       return;
     }
-  },
+  }
 );
 
 router.get(
-  "/sender",
+  "/poster",
   authenticate,
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const senderId = req.query.id as string;
-      if (!senderId) {
-        res.status(404).json({ error: "senderId not provided" });
+      const posterId = req.query.id as string;
+      if (!posterId) {
+        res.status(404).json({ error: "PosterId not provided" });
         return;
       }
 
-      const posts = await getPostsBySenderId(senderId);
+      const posts = await getPostsByPosterId(posterId);
       res.json(posts);
       return;
     } catch (err) {
       res.status(500).json({ error: err.message });
       return;
     }
-  },
+  }
 );
 
 router.get(
@@ -104,7 +107,7 @@ router.get(
       res.status(500).json({ error: err.message });
       return;
     }
-  },
+  }
 );
 
 router.put(
@@ -117,17 +120,17 @@ router.put(
         res.status(400).json({ error: "Invalid post ID" });
         return;
       }
-      const { message } = req.body;
-      if (!message) {
+      const { description } = req.body;
+      if (!description) {
         res.status(400).json("required body not provided");
         return;
       }
-      if (typeof message !== "string") {
+      if (typeof description !== "string") {
         res.status(400).json("wrong type body parameters");
         return;
       }
 
-      const updatedPost = await updatePostById(postId, message);
+      const updatedPost = await updatePostById(postId, description);
       if (!updatedPost) {
         res.status(404).json({
           error: "Post not found",
@@ -140,7 +143,7 @@ router.put(
       res.status(500).json({ error: err.message });
       return;
     }
-  },
+  }
 );
 
 export default router;

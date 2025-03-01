@@ -1,6 +1,6 @@
-import Comment from "../db/commentSchema";
+import Comment, { IComment } from "../db/commentSchema";
 
-const saveComment = async (comment: string) => {
+const saveComment = async (comment) => {
   const newComment = new Comment(comment);
   try {
     return await newComment.save();

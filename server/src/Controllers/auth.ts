@@ -6,6 +6,7 @@ import { createUser, getUserByEmail } from "../DAL/users";
 import { Response, Request, NextFunction } from "express";
 import { VerifyErrors } from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
+import { AuthenticatedRequest } from "../Middlewares/authMiddleware";
 
 interface UserProps {
   _id: string;
@@ -104,7 +105,7 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-router.post("/logout", async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+router.post("/logout", async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
   const authHeaders = req.headers["authorization"];
   const token = authHeaders && authHeaders.split(" ")[1];
 

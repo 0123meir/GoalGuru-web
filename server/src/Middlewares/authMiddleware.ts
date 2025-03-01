@@ -1,4 +1,11 @@
 import jwt from "jsonwebtoken";
+import { Request } from "express";
+
+export interface AuthenticatedRequest extends Request {
+  user: {
+    id: string;
+  };
+}
 
 const authenticate = async (req, res, next) => {
   const authHeaders = req.headers["authorization"];
@@ -17,7 +24,7 @@ const authenticate = async (req, res, next) => {
       return;
     }
 
-    req.user = user;
+    req.user = {...user, id: user._id};
     next();
   });
 };

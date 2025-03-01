@@ -1,4 +1,5 @@
 import useAuthTokens from "@/hooks/useAuthTokens";
+import useLocalStorage from "@/hooks/useLocalStorage";
 import { APIError } from "@/types/api";
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import { GoogleCredentialResponse } from "@react-oauth/google";
@@ -12,7 +13,7 @@ export const LoginPage = () => {
   const [username, setUsername] = useState<string>("");
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [error, setError] = useState<string | undefined>(undefined);
-
+  const { setItem } = useLocalStorage("userId");
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const serverId = import.meta.env.VITE_SERVER_URL;
 
@@ -34,6 +35,7 @@ export const LoginPage = () => {
     try {
       const response = await axios.post(endpoint, payload);
       setTokens(response.data.accessToken, response.data.refreshToken);
+      setItem(response.data.id);
       navigate("/home");
     } catch (err) {
       const error = err as APIError;
@@ -50,6 +52,8 @@ export const LoginPage = () => {
       });
 
       setTokens(response.data.accessToken, response.data.refreshToken);
+      console.log(response.data); //TODO: get user Id
+
       navigate("/home");
     } catch (err) {
       const error = err as APIError;
@@ -62,7 +66,7 @@ export const LoginPage = () => {
   };
 
   return (
-    <GoogleOAuthProvider clientId={clientId} >
+    <GoogleOAuthProvider clientId={clientId}>
       <div className="flex items-center justify-center min-h-screen bg-gray-100 rtl">
         <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
           <h2 className="text-2xl font-bold text-center mb-4">
