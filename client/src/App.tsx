@@ -6,10 +6,10 @@ import {
 } from "react-router-dom";
 
 import useAuthTokens from "./hooks/useAuthTokens";
-import { Posts } from "./components/Posts";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { isValidToken } from "./utils/auth";
+import { ForumPage } from "./pages/ForumPage";
 
 const App = () => {
   const { getTokens } = useAuthTokens();
@@ -43,7 +43,7 @@ const App = () => {
           path="forum"
           element={
             <PrivateRoute>
-              <Posts />
+              <ForumPage />
             </PrivateRoute>
           }
         />

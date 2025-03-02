@@ -8,15 +8,21 @@ interface PostsProps {
 }
 
 export const Posts = ({ posts, togglePostLike }: PostsProps) => {
-
   const getUserPhoto = (post: Post): string | undefined =>
     post.userPhoto ?? "../assets/default-user.png";
+
+  if (posts.length === 0)
+    return (
+      <div className="flex flex-col items-center bg-gray-100 p-4">
+          No way! seems like you don't have any posts yet, why not create one?
+      </div>
+    );
 
   return (
     <div className="flex flex-col items-center bg-gray-100 p-4">
       {posts?.map((post) => (
         <div
-          key={post.id}
+          key={post._id}
           className="w-3/4 bg-white rounded-lg shadow-md p-4 mb-4 "
         >
           <div className="flex items-center mb-4">
@@ -27,7 +33,7 @@ export const Posts = ({ posts, togglePostLike }: PostsProps) => {
             />
             <div>
               <div className="font-bold">{post.userName}</div>
-              <div className="text-gray-500 text-sm">{post.time}</div>
+              <div className="text-gray-500 text-sm">{post.publishTime}</div>
             </div>
           </div>
           <div className="mb-4">{post.description}</div>
@@ -60,7 +66,7 @@ export const Posts = ({ posts, togglePostLike }: PostsProps) => {
                   : "w-6 h-6 text-gray-700 mr-2"
               }
               onClick={() => {
-                togglePostLike(post.id);
+                togglePostLike(post._id);
               }}
               fill="currentColor"
               viewBox="0 0 20 20"
@@ -72,13 +78,14 @@ export const Posts = ({ posts, togglePostLike }: PostsProps) => {
                 clipRule="evenodd"
               />
             </svg>
-            Likes: {post.likes}
+            Likes: {post.likesCount}
           </div>
           <hr className="my-2" />
           <div className="flex flex-col"></div>
           {post.comments.map((comment, index) => (
             <div key={index} className="mb-2">
-              <span className="font-bold">{comment.user}:</span> {comment.text}
+              <span className="font-bold">{comment.commentorId}:</span>{" "}
+              {comment.content}
             </div>
           ))}
         </div>

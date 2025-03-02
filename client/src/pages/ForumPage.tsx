@@ -4,40 +4,29 @@ import { Post } from "@/types/forum";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
+import NewPostForm from "../components/NewPostForm";
 import { Posts } from "../components/Posts";
 
 export const ForumPage = () => {
-  const [activeTab, setActiveTab] = useState<"myPosts" | "friendsPosts">(
-    "myPosts"
-  );
+  type Tab = "myPosts" | "Explore";
+  const [activeTab, setActiveTab] = useState<Tab>("myPosts");
   const [posts, setPosts] = useState<Post[] | undefined>(undefined);
   const [newPost, setNewPost] = useState("");
   const [loading, setLoading] = useState(true);
   const { getTokens } = useAuthTokens();
   const { getItem } = useLocalStorage("userId");
+  const userId = getItem();
 
   useEffect(() => {
     const serverId = import.meta.env.VITE_SERVER_URL;
-    const userId = getItem();
     const fetchPosts = async () => {
       try {
         const tokens = getTokens();
-        const postsRes = await axios.get(
-          `${serverId}/posts/poster?id=${userId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${tokens.accessToken}`,
-            },
-          }
-        );
-        const PostslikedByUserRes = await axios.get(
-          `${serverId}/users/likedByUser?id=${userId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${tokens.accessToken}`,
-            },
-          }
-        );
+        const postsRes = await axios.get(`${serverId}/posts/`, {
+          headers: {
+            Authorization: `Bearer ${tokens.accessToken}`,
+          },
+        });
 
         setPosts(postsRes.data);
         setLoading(false);
@@ -49,21 +38,21 @@ export const ForumPage = () => {
     fetchPosts();
   }, []);
 
-  const handleTabChange = (tab: "myPosts" | "friendsPosts") => {
+  const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
   };
 
   const togglePostLike = (postId: string) => {
     const updatedPosts = posts?.map((post) => {
-      const postToUpdate = posts.find((post) => post.id === postId);
+      const postToUpdate = posts.find((post) => post._id === postId);
       if (!postToUpdate) {
         return post;
       }
 
       if (postToUpdate.isLikedByUser) {
-        return { ...post, likes: post.likes - 1, isLikedByUser: false };
+        return { ...post, likes: post.likesCount - 1, isLikedByUser: false };
       } else {
-        return { ...post, likes: post.likes + 1, isLikedByUser: true };
+        return { ...post, likes: post.likesCount + 1, isLikedByUser: true };
       }
     });
 
@@ -84,32 +73,48 @@ export const ForumPage = () => {
   }
 
   function getFriendsPosts() {
-    return posts ? posts?.filter((post) => post.id !== getItem()) : [];
+    return posts ? posts?.filter((post) => post._id !== userId) : [];
   }
 
   function getOwnPosts() {
-    return posts ? posts?.filter((post) => post.id === getItem()) : [];
+    return posts ? posts?.filter((post) => post._id === userId) : [];
   }
 
   return (
     <div>
-      <div>
-        <button onClick={() => handleTabChange("myPosts")}>My Posts</button>
-        <button onClick={() => handleTabChange("friendsPosts")}>
-          Friends' Posts
+      <div className="flex justify-center my-4 border-b-2 border-gray-300">
+        <button
+          className={`px-4 py-2 mx-2 rounded-t-lg border-b-4 ${
+            activeTab === "myPosts"
+              ? "border-blue-500 text-blue-500"
+              : "border-transparent text-gray-500"
+          }`}
+          onClick={() => handleTabChange("myPosts")}
+        >
+          My Posts
+        </button>
+        <button
+          className={`px-4 py-2 mx-2 rounded-t-lg border-b-4 ${
+            activeTab === "Explore"
+              ? "border-blue-500 text-blue-500"
+              : "border-transparent text-gray-500"
+          }`}
+          onClick={() => handleTabChange("Explore")}
+        >
+          Explore Posts
         </button>
       </div>
       {activeTab === "myPosts" && (
         <div>
-          <div>
-            <h2>Create New Post</h2>
-            <textarea value={newPost} onChange={handleNewPostChange} />
-            <button onClick={handleNewPostSubmit}>Submit</button>
-          </div>
+          <NewPostForm
+            newPost={newPost}
+            handleNewPostChange={handleNewPostChange}
+            handleNewPostSubmit={handleNewPostSubmit}
+          />
           <Posts posts={getOwnPosts()} togglePostLike={togglePostLike} />
         </div>
       )}
-      {activeTab === "friendsPosts" && (
+      {activeTab === "Explore" && (
         <Posts posts={getFriendsPosts()} togglePostLike={togglePostLike} />
       )}
     </div>

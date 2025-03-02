@@ -1,11 +1,18 @@
 export interface Post {
-  id: string;
+  _id: string;
   userPhoto: string;
   userName: string;
   description: string;
-  time: string;
+  publishTime: string;
   photos: string[];
-  likes: number;
+  likesCount: number;
   isLikedByUser: boolean;
-  comments: { user: string; text: string }[];
+  comments: Comment[];
+}
+
+interface Comment {
+  _id: string;
+  content: string;
+  commentorId: string;
+  postId: string;
 }
