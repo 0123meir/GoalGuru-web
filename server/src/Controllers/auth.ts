@@ -104,92 +104,106 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-router.post("/logout", async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const authHeaders = req.headers["authorization"];
-  const token = authHeaders && authHeaders.split(" ")[1];
+router.post(
+  "/logout",
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const authHeaders = req.headers["authorization"];
+    const token = authHeaders && authHeaders.split(" ")[1];
 
-  if (!token) {
-    res.sendStatus(401);
-    return;
-  }
-
-  jwt.verify(token as string, process.env.REFRESH_TOKEN_SECRET!, async (err: VerifyErrors | null, userInfo: any) => {
-    if (err) {
-      res.status(403).send(err.message);
+    if (!token) {
+      res.sendStatus(401);
       return;
     }
 
-    const userId = (userInfo as JwtPayload)._id;
-    try {
-      const user = await User.findById(userId);
-      if (!user) return res.status(403).send("Invalid request");
+    jwt.verify(
+      token as string,
+      process.env.REFRESH_TOKEN_SECRET!,
+      async (err: VerifyErrors | null, userInfo: any) => {
+        if (err) {
+          res.status(403).send(err.message);
+          return;
+        }
 
-      if (!user.tokens.includes(token)) {
-        user.tokens = [];
-        await user.save();
-        return res.status(403).send("Invalid request");
-      }
+        const userId = (userInfo as JwtPayload)._id;
+        try {
+          const user = await User.findById(userId);
+          if (!user) return res.status(403).send("Invalid request");
 
-      user.tokens.splice(user.tokens.indexOf(token), 1);
-      await user.save();
+          if (!user.tokens.includes(token)) {
+            user.tokens = [];
+            await user.save();
+            return res.status(403).send("Invalid request");
+          }
 
-      res.status(200).send();
-      return;
-    } catch (err: any) {
-      res.status(403).send({ message: err.message });
-      return;
-    }
-  });
-});
+          user.tokens.splice(user.tokens.indexOf(token), 1);
+          await user.save();
 
-router.post("/refreshToken", async (req: Request, res: Response): Promise<void> => {
-  const authHeaders = req.headers["authorization"];
-  const token = authHeaders && authHeaders.split(" ")[1];
+          res.status(200).send();
+          return;
+        } catch (err: any) {
+          res.status(403).send({ message: err.message });
+          return;
+        }
+      },
+    );
+  },
+);
 
-  if (!token) {
-    res.sendStatus(401);
-    return;
-  }
+router.post(
+  "/refreshToken",
+  async (req: Request, res: Response): Promise<void> => {
+    const authHeaders = req.headers["authorization"];
+    const token = authHeaders && authHeaders.split(" ")[1];
 
-  jwt.verify(token as string, process.env.REFRESH_TOKEN_SECRET!, async (err: VerifyErrors | null, userInfo: any) => {
-    if (err) return res.status(403).send(err.message);
-
-    const userId = (userInfo as JwtPayload)._id;
-    try {
-      const user = await User.findById(userId);
-      if (!user) return res.status(403).send("Invalid request");
-
-      if (!user.tokens.includes(token)) {
-        user.tokens = [];
-        await user.save();
-        return res.status(403).send("Invalid request");
-      }
-
-      const accessToken = jwt.sign(
-        { _id: user._id },
-        process.env.ACCESS_TOKEN_SECRET!,
-        { expiresIn: process.env.JWT_TOKEN_EXPIRATION! },
-      );
-
-      const refreshToken = jwt.sign(
-        { _id: user._id },
-        process.env.REFRESH_TOKEN_SECRET!,
-      );
-
-      user.tokens[user.tokens.indexOf(token)] = refreshToken;
-      await user.save();
-
-      res.status(200).send({
-        accessToken,
-        refreshToken,
-      });
-      return;
-    } catch (err: any) {
-      res.status(403).send(err.message);
+    if (!token) {
+      res.sendStatus(401);
       return;
     }
-  });
-});
+
+    jwt.verify(
+      token as string,
+      process.env.REFRESH_TOKEN_SECRET!,
+      async (err: VerifyErrors | null, userInfo: any) => {
+        if (err) return res.status(403).send(err.message);
+
+        const userId = (userInfo as JwtPayload)._id;
+        try {
+          const user = await User.findById(userId);
+          if (!user) return res.status(403).send("Invalid request");
+
+          if (!user.tokens.includes(token)) {
+            user.tokens = [];
+            await user.save();
+            return res.status(403).send("Invalid request");
+          }
+
+          const accessToken = jwt.sign(
+            { _id: user._id },
+            process.env.ACCESS_TOKEN_SECRET!,
+            { expiresIn: process.env.JWT_TOKEN_EXPIRATION! },
+          );
+
+          const refreshToken = jwt.sign(
+            { _id: user._id },
+            process.env.REFRESH_TOKEN_SECRET!,
+          );
+
+          user.tokens[user.tokens.indexOf(token)] = refreshToken;
+          await user.save();
+
+          res.status(200).send({
+            accessToken,
+            refreshToken,
+          });
+          return;
+        } catch (err: any) {
+          res.status(403).send(err.message);
+          return;
+        }
+      },
+    );
+  },
+);
 
 router.post("/google", async (req: Request, res: Response) => {
   try {
@@ -207,8 +221,15 @@ router.post("/google", async (req: Request, res: Response) => {
       await user.save();
     }
 
-    const accessToken = jwt.sign({ _id: user._id }, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: process.env.JWT_TOKEN_EXPIRATION! });
-    const refreshToken = jwt.sign({ _id: user._id }, process.env.REFRESH_TOKEN_SECRET!);
+    const accessToken = jwt.sign(
+      { _id: user._id },
+      process.env.ACCESS_TOKEN_SECRET!,
+      { expiresIn: process.env.JWT_TOKEN_EXPIRATION! },
+    );
+    const refreshToken = jwt.sign(
+      { _id: user._id },
+      process.env.REFRESH_TOKEN_SECRET!,
+    );
 
     user.tokens.push(refreshToken);
     await user.save();
