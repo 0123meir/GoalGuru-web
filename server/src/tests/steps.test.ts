@@ -26,8 +26,7 @@ beforeAll(async () => {
 
   const sampleGoal = new Goal({
     name: "Sample Goal",
-    creatorId: creatorId,
-    steps: []
+    creatorId: creatorId
   });
   const savedGoal = await sampleGoal.save();
   goalId = savedGoal._id as ObjectId;

@@ -36,7 +36,6 @@ beforeEach(async () => {
   const sampleGoal = new Goal({
     name: "Sample Goal",
     creatorId: creatorId,
-    steps: []
   });
   const savedGoal = await sampleGoal.save();
   goalId = savedGoal._id as ObjectId;
@@ -55,7 +54,6 @@ describe("Testing Goal Routes", () => {
         .set("Authorization", "Bearer " + accessToken)
         .send({
           name: "Hello, world!",
-          steps: [],
           creatorId: creatorId,
         });
 

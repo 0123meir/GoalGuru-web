@@ -16,18 +16,17 @@ router.post(
   authenticate,
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const { name, steps } = req.body;
+      const { name } = req.body;
       const creatorId = req["user"]._id;
 
-      if (!name || !creatorId || !steps) {
+      if (!name || !creatorId) {
         res.status(400).json("required body not provided");
         return;
       }
 
       if (
         typeof name !== "string" ||
-        !mongoose.Types.ObjectId.isValid(creatorId) ||
-        !Array.isArray(steps)
+        !mongoose.Types.ObjectId.isValid(creatorId)
       ) {
         res.status(400).json("wrong type in one of the body parameters");
         return;

@@ -20,8 +20,7 @@ const stepSchema: Schema<IStep> = new mongoose.Schema({
 
 stepSchema.pre<Query<any, IStep>>(/^find/, function (next) {
   this.populate({
-    path: "goal",
-    select: "-steps",
+    path: "goal"
   });
   next();
 });

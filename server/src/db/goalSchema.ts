@@ -16,22 +16,7 @@ const goalSchema: Schema<IGoal> = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
-  },
-  steps: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Step",
-      required: true
-    },
-  ],
-});
-
-goalSchema.pre<Query<any, IGoal>>(/^find/, function (next) {
-  this.populate({
-    path: "steps",
-    select: "-goal",
-  });
-  next();
+  }
 });
 
 const Goal = mongoose.model<IGoal>("Goal", goalSchema);
