@@ -1,6 +1,7 @@
 import { Post } from "@/types/forum";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
+import defaultUserImage from "../assets/default-user.png";
 
 interface PostsProps {
   posts: Post[];
@@ -9,12 +10,12 @@ interface PostsProps {
 
 export const Posts = ({ posts, togglePostLike }: PostsProps) => {
   const getUserPhoto = (post: Post): string | undefined =>
-    post.userPhoto ?? "../assets/default-user.png";
+    post.userPhoto ?? defaultUserImage;
 
   if (posts.length === 0)
     return (
       <div className="flex flex-col items-center bg-gray-100 p-4">
-          No way! seems like you don't have any posts yet, why not create one?
+        No way! seems like you don't have any posts yet, why not create one?
       </div>
     );
 
@@ -38,17 +39,17 @@ export const Posts = ({ posts, togglePostLike }: PostsProps) => {
           </div>
           <div className="mb-4">{post.description}</div>
           <hr className="my-2" />
-          {post.photos && (
+          {post.images && (
             <div className="w-full flex justify-center mb-4">
               <div className="w-1/2">
                 <Carousel showThumbs={false} infiniteLoop useKeyboardArrows>
-                  {post.photos.map((photo, index) => (
+                  {post.images.map((image, index) => (
                     <div
                       key={index}
                       className="flex justify-center bg-gray-100"
                     >
                       <img
-                        src={photo}
+                        src={image}
                         alt="Post"
                         className="object-contain h-64 w-full rounded-lg"
                       />

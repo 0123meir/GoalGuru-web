@@ -6,8 +6,7 @@ export async function addLike(userId: string, postId: string) {
       userId,
       postId,
     });
-    console.log(newLike);
-
+    
     return await newLike.save();
   } catch (err) {
     console.error("Post saving error: ", err);

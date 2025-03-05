@@ -57,7 +57,6 @@ const getRecentPosts = async (userId: string) => {
       },
       {
         $project: {
-          _id: 0,
           description: 1,
           createdAt: 1,
           likesCount: 1,

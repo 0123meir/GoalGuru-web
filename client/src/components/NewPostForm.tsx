@@ -1,32 +1,27 @@
+import { newPost } from "@/types/forum";
 import { faImage, faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useEffect } from "react";
+import { ChangeEvent, MouseEvent, useState } from "react";
 
 interface NewPostFormProps {
-  newPost: string;
-  handleNewPostChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  handleNewPostSubmit: () => void;
+  handleNewPostSubmit: (newPopst: newPost) => void;
 }
 const MAX_IMAGES = 4;
 
-const NewPostForm: React.FC<NewPostFormProps> = ({
-  newPost,
-  handleNewPostChange,
-  handleNewPostSubmit,
-}) => {
-  const [images, setImages] = React.useState<File[]>([]);
+const NewPostForm = ({ handleNewPostSubmit }: NewPostFormProps) => {
+  const [images, setImages] = useState<File[]>([]);
+  const [description, setDescription] = useState<string>("");
 
-  useEffect(() => {
-    if (newPost === "") {
-      setImages([]);
-    }
-  }, [newPost]);
+  const clearForm = () => {
+    setImages([]);
+    setDescription("");
+  };
 
   const handleRemoveImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newImages = Array.from(e.target.files);
       if (images.length + newImages.length <= MAX_IMAGES) {
@@ -36,6 +31,16 @@ const NewPostForm: React.FC<NewPostFormProps> = ({
         setImages([...images, ...allowedImages]);
       }
     }
+  };
+
+  const submitNewPost = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    handleNewPostSubmit({ description, images });
+    clearForm();
+  };
+
+  const handleDescriptionChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    setDescription(event.target.value);
   };
 
   return (
@@ -62,8 +67,8 @@ const NewPostForm: React.FC<NewPostFormProps> = ({
         <div className="relative flex">
           <textarea
             className="w-full p-4 border border-gray-300 rounded-lg mb-4 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            value={newPost}
-            onChange={handleNewPostChange}
+            value={description}
+            onChange={handleDescriptionChange}
             placeholder="What's on your mind?"
             rows={4}
             maxLength={200}
@@ -91,7 +96,7 @@ const NewPostForm: React.FC<NewPostFormProps> = ({
           </label>
           <button
             className="flex items-center h-10 p-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onClick={handleNewPostSubmit}
+            onClick={submitNewPost}
           >
             <FontAwesomeIcon icon={faPaperPlane} className="mr-2" />
             Publish Post

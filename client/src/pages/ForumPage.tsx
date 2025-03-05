@@ -1,6 +1,7 @@
+import LoadingScreen from "@/components/LoadingScreen";
 import useAuthTokens from "@/hooks/useAuthTokens";
 import useLocalStorage from "@/hooks/useLocalStorage";
-import { Post } from "@/types/forum";
+import { Post, newPost } from "@/types/forum";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
@@ -11,18 +12,17 @@ export const ForumPage = () => {
   type Tab = "myPosts" | "Explore";
   const [activeTab, setActiveTab] = useState<Tab>("myPosts");
   const [posts, setPosts] = useState<Post[] | undefined>(undefined);
-  const [newPost, setNewPost] = useState("");
   const [loading, setLoading] = useState(true);
   const { getTokens } = useAuthTokens();
   const { getItem } = useLocalStorage("userId");
   const userId = getItem();
+  const ApiEndpoint = import.meta.env.VITE_SERVER_URL;
+  const tokens = getTokens();
 
   useEffect(() => {
-    const serverId = import.meta.env.VITE_SERVER_URL;
     const fetchPosts = async () => {
       try {
-        const tokens = getTokens();
-        const postsRes = await axios.get(`${serverId}/posts/`, {
+        const postsRes = await axios.get(`${ApiEndpoint}/posts/`, {
           headers: {
             Authorization: `Bearer ${tokens.accessToken}`,
           },
@@ -42,34 +42,71 @@ export const ForumPage = () => {
     setActiveTab(tab);
   };
 
-  const togglePostLike = (postId: string) => {
-    const updatedPosts = posts?.map((post) => {
-      const postToUpdate = posts.find((post) => post._id === postId);
-      if (!postToUpdate) {
-        return post;
-      }
+  const togglePostLike = async (postId: string) => {
+    const post = posts?.find((post) => post._id === postId);
+    if (!post) return;
 
-      if (postToUpdate.isLikedByUser) {
-        return { ...post, likes: post.likesCount - 1, isLikedByUser: false };
+    const isLikedByUser = !post.isLikedByUser;
+    const updatedPosts = posts?.map((post) =>
+      post._id === postId
+        ? {
+            ...post,
+            isLikedByUser,
+            likesCount: isLikedByUser
+              ? post.likesCount + 1
+              : post.likesCount - 1,
+          }
+        : post
+    );
+
+    try {
+      if (isLikedByUser) {
+        await likePost(postId);
       } else {
-        return { ...post, likes: post.likesCount + 1, isLikedByUser: true };
+        await unlikePost(postId);
       }
-    });
-
-    setPosts(updatedPosts);
-  };
-  const handleNewPostChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setNewPost(e.target.value);
+      setPosts(updatedPosts);
+    } catch (error) {
+      console.error("Failed to toggle like for post with id:", postId, error);
+    }
   };
 
-  const handleNewPostSubmit = () => {
+  const likePost = async (postId: string) => {
+    try {
+      await axios.post(
+        `${ApiEndpoint}/likes`,
+        { postId },
+        {
+          headers: {
+            Authorization: `Bearer ${tokens.accessToken}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.error(error);
+      throw new Error("Failed to like post");
+    }
+  };
+
+  const unlikePost = async (postId: string) => {
+    try {
+      await axios.delete(`${ApiEndpoint}/likes/${postId}`, {
+        headers: {
+          Authorization: `Bearer ${tokens.accessToken}`,
+        },
+      });
+    } catch (error) {
+      throw new Error("Failed to unlike post");
+    }
+  };
+
+  const handleNewPostSubmit = (newPost: newPost) => {
     // Handle new post submission logic here
     console.log("New post submitted:", newPost);
-    setNewPost("");
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingScreen text="Please wait while we search for posts." />;
   }
 
   function getFriendsPosts() {
@@ -106,11 +143,7 @@ export const ForumPage = () => {
       </div>
       {activeTab === "myPosts" && (
         <div>
-          <NewPostForm
-            newPost={newPost}
-            handleNewPostChange={handleNewPostChange}
-            handleNewPostSubmit={handleNewPostSubmit}
-          />
+          <NewPostForm handleNewPostSubmit={handleNewPostSubmit} />
           <Posts posts={getOwnPosts()} togglePostLike={togglePostLike} />
         </div>
       )}

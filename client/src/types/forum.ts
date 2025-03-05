@@ -4,10 +4,14 @@ export interface Post {
   userName: string;
   description: string;
   publishTime: string;
-  photos: string[];
+  images: string[];
   likesCount: number;
   isLikedByUser: boolean;
   comments: Comment[];
+}
+export interface newPost {
+  description: string;
+  images: File[];
 }
 
 interface Comment {
