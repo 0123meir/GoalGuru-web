@@ -37,7 +37,7 @@ router.post(
         return;
       }
 
-      const addedStep = await saveStep({...req.body, goal: goalId});
+      const addedStep = await saveStep({ ...req.body, goal: goalId });
 
       res.json({
         message: "step saved successfully",
@@ -122,7 +122,7 @@ router.delete(
         res.status(404).json({ error: "Step not found" });
         return;
       }
-      
+
       const deletedStep = await deleteStepById(step);
 
       if (!deletedStep) {
@@ -165,8 +165,8 @@ router.get(
 
       if (goal.creatorId.toString() !== req["user"]._id) {
         res.status(403).json({
-            error: "Can't retrieve someone else's goal",
-          });
+          error: "Can't retrieve someone else's goal",
+        });
         return;
       }
 

@@ -32,7 +32,7 @@ router.post(
         return;
       }
 
-      const addedGoal = await saveGoal({...req.body, creatorId});
+      const addedGoal = await saveGoal({ ...req.body, creatorId });
 
       res.json({ message: "goal saved successfully", goal: addedGoal });
       return;

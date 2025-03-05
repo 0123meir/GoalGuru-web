@@ -78,7 +78,7 @@ describe("Testing Goal Routes", () => {
         .set("Authorization", "Bearer " + accessToken)
         .send({
           name: 12345,
-          steps: "123"
+          steps: "123",
         });
 
       expect(res.statusCode).toBe(400);
@@ -111,13 +111,17 @@ describe("Testing Goal Routes", () => {
 
   describe("GET /goals/sender", () => {
     it("should retrieve goals by creatorId", async () => {
-      const sampleGoal = new Goal({ name: "By sender", creatorId: creatorId, steps: [] });
+      const sampleGoal = new Goal({
+        name: "By sender",
+        creatorId: creatorId,
+        steps: [],
+      });
       await sampleGoal.save();
-      
+
       const res = await request(app)
-      .get("/goals/sender")
-      .set("Authorization", "Bearer " + accessToken);
-      
+        .get("/goals/sender")
+        .set("Authorization", "Bearer " + accessToken);
+
       expect(res.statusCode).toBe(200);
       expect(Array.isArray(res.body)).toBeTruthy();
       expect(res.body[0]).toHaveProperty("creatorId", creatorId.toString());

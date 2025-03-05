@@ -25,8 +25,7 @@ const updateStepById = async (id: string, content: string) => {
 
 const deleteStepById = async (step: IStep) => {
   try {
-
-    const goal = (step.goal as IGoal);
+    const goal = step.goal as IGoal;
     await Goal.findByIdAndUpdate(goal.id, { $pull: { steps: step.id } });
     const deletedStep = await Step.findByIdAndDelete(step.id);
 

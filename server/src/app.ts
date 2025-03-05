@@ -9,6 +9,7 @@ import userRouter from "./Controllers/users";
 import authRouter from "./Controllers/auth";
 import goalsRouter from "./Controllers/goals";
 import stepsRouter from "./Controllers/steps";
+import guruRouter from "./Controllers/guru";
 
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
@@ -34,5 +35,6 @@ app.use("/users", userRouter);
 app.use("/goals", goalsRouter);
 app.use("/steps", stepsRouter);
 app.use("/auth", authRouter);
+app.use("/guru", guruRouter);
 
 export default app;

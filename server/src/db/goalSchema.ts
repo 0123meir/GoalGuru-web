@@ -16,7 +16,7 @@ const goalSchema: Schema<IGoal> = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
-  }
+  },
 });
 
 const Goal = mongoose.model<IGoal>("Goal", goalSchema);

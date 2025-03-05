@@ -26,7 +26,7 @@ beforeAll(async () => {
 
   const sampleGoal = new Goal({
     name: "Sample Goal",
-    creatorId: creatorId
+    creatorId: creatorId,
   });
   const savedGoal = await sampleGoal.save();
   goalId = savedGoal._id as ObjectId;
@@ -92,7 +92,7 @@ describe("Step Routes Tests", () => {
     expect(res.body).toBe("wrong type in one of the body parameters");
   });
 
-  it("should return 400 for non-existent goalId", async () => {
+  it("should return 404 for non-existent goalId", async () => {
     const res = await request(app)
       .post("/steps/")
       .set("Authorization", "Bearer " + accessToken)
@@ -102,7 +102,7 @@ describe("Step Routes Tests", () => {
         goalId: new Types.ObjectId(),
       });
 
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(404);
     expect(res.body).toBe("goal does not exist");
   });
 
