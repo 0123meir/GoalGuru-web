@@ -1,6 +1,5 @@
 import Step, { IStep } from "../db/stepSchema";
 import Goal, { IGoal } from "../db/goalSchema";
-import mongoose from "mongoose";
 
 const saveStep = async (step: IStep) => {
   const newStep = new Step(step);

@@ -53,7 +53,7 @@ router.post(
         ),
       );
       const stepsResponse = await getStepsByGoalId(goal._id as string);
-      res.json({ goal: stepsResponse });
+      res.json({ steps: stepsResponse, name: name });
       return;
     } catch (error) {
       console.log(error);
