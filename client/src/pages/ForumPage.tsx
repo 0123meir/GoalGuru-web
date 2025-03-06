@@ -96,6 +96,7 @@ export const ForumPage = () => {
         },
       });
     } catch (error) {
+      console.error(error);
       throw new Error("Failed to unlike post");
     }
   };

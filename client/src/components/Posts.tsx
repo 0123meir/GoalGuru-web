@@ -1,6 +1,8 @@
 import { Post } from "@/types/forum";
+import { formatDistanceToNow } from "date-fns";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
+
 import defaultUserImage from "../assets/default-user.png";
 
 interface PostsProps {
@@ -10,7 +12,10 @@ interface PostsProps {
 
 export const Posts = ({ posts, togglePostLike }: PostsProps) => {
   const getUserPhoto = (post: Post): string | undefined =>
-    post.userPhoto ?? defaultUserImage;
+    post.poster.profileImage ?? defaultUserImage;
+  const formatPublishTime = (publishTime: Date): string => {
+    return formatDistanceToNow(publishTime);
+  };
 
   if (posts.length === 0)
     return (
@@ -33,8 +38,10 @@ export const Posts = ({ posts, togglePostLike }: PostsProps) => {
               className="w-12 h-12 rounded-full mr-4"
             />
             <div>
-              <div className="font-bold">{post.userName}</div>
-              <div className="text-gray-500 text-sm">{post.publishTime}</div>
+              <div className="font-bold">{post.poster.username}</div>
+              <div className="text-gray-500 text-sm">
+          {formatPublishTime(new Date(post.publishTime))}
+              </div>
             </div>
           </div>
           <div className="mb-4">{post.description}</div>
@@ -42,53 +49,58 @@ export const Posts = ({ posts, togglePostLike }: PostsProps) => {
           {post.images && (
             <div className="w-full flex justify-center mb-4">
               <div className="w-1/2">
-                <Carousel showThumbs={false} infiniteLoop useKeyboardArrows>
-                  {post.images.map((image, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-center bg-gray-100"
-                    >
-                      <img
-                        src={image}
-                        alt="Post"
-                        className="object-contain h-64 w-full rounded-lg"
-                      />
-                    </div>
-                  ))}
-                </Carousel>
+          <Carousel showThumbs={false} infiniteLoop useKeyboardArrows>
+              {post.images.map((image: string, index: number) => (
+              <div
+                key={index}
+                className="flex justify-center bg-gray-100"
+              >
+                <img
+                src={image}
+                alt="Post"
+                className="object-contain h-64 w-full rounded-lg"
+                />
+              </div>
+              ))}
+          </Carousel>
               </div>
             </div>
           )}
           <div className="flex items-center text-gray-700 mb-4">
             <svg
               className={
-                post.isLikedByUser
-                  ? "w-6 h-6 text-red-500 mr-2"
-                  : "w-6 h-6 text-gray-700 mr-2"
+          post.isLikedByUser
+            ? "w-6 h-6 text-red-500 mr-2"
+            : "w-6 h-6 text-gray-700 mr-2"
               }
               onClick={() => {
-                togglePostLike(post._id);
+          togglePostLike(post._id);
               }}
               fill="currentColor"
               viewBox="0 0 20 20"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                fillRule="evenodd"
-                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                clipRule="evenodd"
+          fillRule="evenodd"
+          d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+          clipRule="evenodd"
               />
             </svg>
             Likes: {post.likesCount}
           </div>
           <hr className="my-2" />
-          <div className="flex flex-col"></div>
-          {post.comments.map((comment, index) => (
-            <div key={index} className="mb-2">
-              <span className="font-bold">{comment.commentorId}:</span>{" "}
-              {comment.content}
-            </div>
-          ))}
+          <div className="flex flex-col">
+            {post.comments.length > 0 ? (
+              post.comments.map((comment, index) => (
+          <div key={index} className="mb-2">
+            <span className="font-bold">{comment.username}:</span>{" "}
+            {comment.content}
+          </div>
+              ))
+            ) : (
+              <div className="text-gray-500">No comments yet, be the first one to comment!</div>
+            )}
+          </div>
         </div>
       ))}
     </div>

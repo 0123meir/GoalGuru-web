@@ -13,6 +13,22 @@ const savePost = async (post: IPost) => {
 const getRecentPosts = async (userId: string) => {
   try {
     return await Post.aggregate([
+      // 1. Sort by publishTime (newest first) and limit to 10 posts
+      { $sort: { publishTime: -1 } },
+      { $limit: 10 },
+
+      // 2. Lookup the poster's user info to get the username
+      {
+        $lookup: {
+          from: "users",
+          localField: "posterId",
+          foreignField: "_id",
+          as: "poster",
+        },
+      },
+      { $unwind: "$poster" },
+
+      // 3. Lookup likes for each post to count them
       {
         $lookup: {
           from: "likes",
@@ -21,6 +37,8 @@ const getRecentPosts = async (userId: string) => {
           as: "likes",
         },
       },
+
+      // 4. Lookup comments for each post
       {
         $lookup: {
           from: "comments",
@@ -29,40 +47,58 @@ const getRecentPosts = async (userId: string) => {
           as: "comments",
         },
       },
+
+      // 5. Lookup users for the commentors (to later extract their username)
+      {
+        $lookup: {
+          from: "users",
+          localField: "comments.commentorId",
+          foreignField: "_id",
+          as: "commentUsers",
+        },
+      },
+      // 6. Compute isLikedByUser: true if currentUserId exists in the likes array
       {
         $addFields: {
-          likesCount: {
-            $size: "$likes",
-          },
           isLikedByUser: {
-            $anyElementTrue: {
-              $map: {
-                input: "$likes",
-                as: "like",
-                in: {
-                  $eq: [
-                    "$$like.userId",
-                    new ObjectId(userId),
+            $in: [userId, "$likes.userId"],
+          },
+        },
+      },
+      // 7. Project the fields needed with the commentor's username only
+      {
+        $project: {
+          description: 1,
+          publishTime: 1,
+          "poster.username": 1,
+          likesCount: { $size: "$likes" },
+          comments: {
+            $map: {
+              input: "$comments",
+              as: "c",
+              in: {
+                content: "$$c.content",
+                username: {
+                  $arrayElemAt: [
+                    {
+                      $map: {
+                        input: {
+                          $filter: {
+                            input: "$commentUsers",
+                            as: "cu",
+                            cond: { $eq: ["$$cu._id", "$$c.commentorId"] },
+                          },
+                        },
+                        as: "matchedUser",
+                        in: "$$matchedUser.username",
+                      },
+                    },
+                    0,
                   ],
                 },
               },
             },
           },
-        },
-      },
-      {
-        $sort: {
-          createdAt: -1,
-        },
-      },
-      {
-        $project: {
-          description: 1,
-          createdAt: 1,
-          likesCount: 1,
-          isLikedByUser: 1,
-          comments: 1,
- 	 				publishTime: 1
         },
       },
     ]);
