@@ -26,7 +26,9 @@ function useApiRequests() {
     instance.interceptors.response.use(
       (response) => response,
       async (error) => {
-        if (error.response?.status === 401) {
+        const originalRequest = error.config;
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
           const { refreshToken } = getTokens();
           if (!refreshToken) {
             clearTokens();
@@ -35,14 +37,16 @@ function useApiRequests() {
           }
 
           try {
-            const { data } = await axios.post("/api/refresh-token", {
+            console.log("Attempting to refresh token...");
+            const { data } = await instance.post("/api/refresh-token", {
               refreshToken,
             });
             setTokens(data.accessToken, data.refreshToken);
 
-            error.config.headers.Authorization = `Bearer ${data.accessToken}`;
-            return axios(error.config);
+            originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+            return instance(originalRequest);
           } catch (refreshError) {
+            console.error("Refresh token failed:", refreshError);
             clearTokens();
             navigate("/login");
             return Promise.reject(refreshError);

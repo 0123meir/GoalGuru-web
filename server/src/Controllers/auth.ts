@@ -46,7 +46,7 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
     res.status(201).json(extractUserProps(user));
     return;
   } catch (error: any) {
-    console.log("registration returned error:", error.message);
+    console.error("Error during registration:", error.message);
     sendError(res, error.message);
     return;
   }
@@ -101,7 +101,9 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
     });
     return;
   } catch (err: any) {
+    console.error("Error during login:", err.message);
     sendError(res, err.message);
+    return;
   }
 });
 
@@ -123,20 +125,25 @@ router.post("/logout", async (req: AuthenticatedRequest, res: Response, next: Ne
     const userId = (userInfo as JwtPayload)._id;
     try {
       const user = await User.findById(userId);
-      if (!user) return res.status(403).send("Invalid request");
+      if (!user) {
+        res.status(403).send("Invalid request");
+        return;
+      }
 
       if (!user.tokens.includes(token)) {
         user.tokens = [];
         await user.save();
-        return res.status(403).send("Invalid request");
+        res.status(403).send("Invalid request");
+        return;
       }
 
       user.tokens.splice(user.tokens.indexOf(token), 1);
       await user.save();
 
-      res.status(200).send();
+      res.status(200).send({ message: "Logout successful" });
       return;
     } catch (err: any) {
+      console.error("Error during logout:", err.message);
       res.status(403).send({ message: err.message });
       return;
     }
@@ -153,17 +160,24 @@ router.post("/refreshToken", async (req: Request, res: Response): Promise<void> 
   }
 
   jwt.verify(token as string, process.env.REFRESH_TOKEN_SECRET!, async (err: VerifyErrors | null, userInfo: any) => {
-    if (err) return res.status(403).send(err.message);
+    if (err) {
+      res.status(403).send(err.message);
+      return;
+    }
 
     const userId = (userInfo as JwtPayload)._id;
     try {
       const user = await User.findById(userId);
-      if (!user) return res.status(403).send("Invalid request");
+      if (!user) {
+        res.status(403).send("Invalid request");
+        return;
+      }
 
       if (!user.tokens.includes(token)) {
         user.tokens = [];
         await user.save();
-        return res.status(403).send("Invalid request");
+        res.status(403).send("Invalid request");
+        return;
       }
 
       const accessToken = jwt.sign(
@@ -186,6 +200,7 @@ router.post("/refreshToken", async (req: Request, res: Response): Promise<void> 
       });
       return;
     } catch (err: any) {
+      console.error("Error during token refresh:", err.message);
       res.status(403).send(err.message);
       return;
     }
@@ -215,8 +230,11 @@ router.post("/google", async (req: Request, res: Response) => {
     await user.save();
 
     res.json({ accessToken, refreshToken });
+    return;
   } catch (error) {
-    res.status(401).json({ error: "Invalid Google token" });
+    console.error("Error during Google authentication:", error);
+    res.status(401).json({ error: "Invalid Google token", details: error.message });
+    return;
   }
 });
 

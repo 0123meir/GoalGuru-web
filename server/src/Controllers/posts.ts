@@ -21,24 +21,28 @@ router.post(
       const { description, posterId } = req.body;
 
       if (!description || !posterId) {
-        res.status(400).json("required body not provided");
+        res.status(400).json({ error: "Required body not provided" });
         return;
       }
       if (
         typeof description !== "string" ||
         !mongoose.Types.ObjectId.isValid(posterId)
       ) {
-        res.status(400).json("wrong type in one of the body parameters");
+        res
+          .status(400)
+          .json({ error: "Wrong type in one of the body parameters" });
         return;
       }
 
       const addedPost = await savePost(req.body);
 
-      res.json({ message: "post saved successfully", post: addedPost });
+      res.json({ message: "Post saved successfully", post: addedPost });
       return;
     } catch (error) {
-      console.log(error);
-      res.status(500).json({ error: error.message });
+      console.error("Error saving post:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to save post", details: error.message });
       return;
     }
   }
@@ -54,8 +58,10 @@ router.get(
       res.status(200).json(posts);
       return;
     } catch (err) {
-      console.log(err);
-      res.status(500).json({ error: err.message });
+      console.error("Error fetching recent posts:", err);
+      res
+        .status(500)
+        .json({ error: "Failed to fetch recent posts", details: err.message });
       return;
     }
   }
@@ -76,7 +82,13 @@ router.get(
       res.json(posts);
       return;
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error("Error fetching posts by poster ID:", err);
+      res
+        .status(500)
+        .json({
+          error: "Failed to fetch posts by poster ID",
+          details: err.message,
+        });
       return;
     }
   }
@@ -103,8 +115,10 @@ router.get(
       res.json(post);
       return;
     } catch (err) {
-      console.log(err);
-      res.status(500).json({ error: err.message });
+      console.error("Error fetching post by ID:", err);
+      res
+        .status(500)
+        .json({ error: "Failed to fetch post by ID", details: err.message });
       return;
     }
   }
@@ -122,25 +136,26 @@ router.put(
       }
       const { description } = req.body;
       if (!description) {
-        res.status(400).json("required body not provided");
+        res.status(400).json({ error: "Required body not provided" });
         return;
       }
       if (typeof description !== "string") {
-        res.status(400).json("wrong type body parameters");
+        res.status(400).json({ error: "Wrong type body parameters" });
         return;
       }
 
       const updatedPost = await updatePostById(postId, description);
       if (!updatedPost) {
-        res.status(404).json({
-          error: "Post not found",
-        });
+        res.status(404).json({ error: "Post not found" });
         return;
       }
       res.json(updatedPost);
       return;
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error("Error updating post by ID:", err);
+      res
+        .status(500)
+        .json({ error: "Failed to update post by ID", details: err.message });
       return;
     }
   }

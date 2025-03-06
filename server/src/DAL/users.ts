@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import User from "../db/userSchema";
+import User, { IUser } from "../db/userSchema";
 
 const createUser = async (
   username: string,

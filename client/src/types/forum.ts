@@ -1,7 +1,7 @@
 export interface Comment {
   content: string;
   username: string;
-  profileImage: string;
+  profileImage?: string;
 }
 export interface Post {
   _id: string;

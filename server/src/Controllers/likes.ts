@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { Response } from "express";
 import { addLike, removeLike } from "../DAL/likes";
 import authenticate, {
   AuthenticatedRequest,
@@ -15,9 +15,12 @@ router.post(
     
     try {
       const like = await addLike(userId, postId);
-      res.status(201).json({ message: `Like added successfully: ${like}` });
+      res.status(201).json({ message: "Like added successfully", like });
+      return;
     } catch (error) {
-      res.status(500).json({ message: "Server error", error });
+      console.error("Error adding like:", error);
+      res.status(500).json({ error: "Failed to add like", details: error.message });
+      return;
     }
   }
 );
@@ -32,8 +35,11 @@ router.delete(
     try {
       await removeLike(userId, postId);
       res.status(200).json({ message: "Like deleted successfully" });
+      return;
     } catch (error) {
-      res.status(500).json({ message: "Server error", error });
+      console.error("Error deleting like:", error);
+      res.status(500).json({ error: "Failed to delete like", details: error.message });
+      return;
     }
   }
 );

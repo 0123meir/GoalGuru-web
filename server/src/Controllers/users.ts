@@ -33,11 +33,13 @@ router.get(
       res.json(users.map(extractUserProps));
       return;
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: error.message });
+      console.error("Error fetching all users:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to fetch users", details: error.message });
       return;
     }
-  },
+  }
 );
 
 // Get a specific user by ID
@@ -53,7 +55,7 @@ router.get(
       }
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        res.status(400).json({ error: "incorrect id format" });
+        res.status(400).json({ error: "Incorrect ID format" });
         return;
       }
       const user = await getUserById(id);
@@ -67,11 +69,11 @@ router.get(
       res.json(extractUserProps(user));
       return;
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Server Error" });
+      console.error("Error fetching user by ID:", error);
+      res.status(500).json({ error: "Server Error", details: error.message });
       return;
     }
-  },
+  }
 );
 
 // Update a user by ID
@@ -84,27 +86,28 @@ router.put(
       const { username, email, password } = req.body;
 
       if (username === "" || email === "" || password === "") {
-        res.status(400).json({ error: "cannot update to empty fields" });
+        res.status(400).json({ error: "Cannot update to empty fields" });
         return;
       }
 
       if (!id) {
-        res.status(400).json({ error: "Missing required field: id" });
+        res.status(400).json({ error: "Missing required field: ID" });
         return;
       }
 
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        res.status(400).json({ error: "incorrect id format" });
+        res.status(400).json({ error: "Incorrect ID format" });
         return;
       }
       const updatedUser = await updateUserById(id, username, email, password);
       if (!updatedUser) {
-        res.status(400).json({ error: "user Not Found" });
+        res.status(400).json({ error: "User not found" });
         return;
       }
       res.json(extractUserProps(updatedUser));
       return;
     } catch (error: any) {
+      console.error("Error updating user by ID:", error);
       const statusCode =
         error.message === "Username already exists" ||
         error.message === "Email already exists"
@@ -113,7 +116,7 @@ router.put(
       res.status(statusCode).json({ error: error.message });
       return;
     }
-  },
+  }
 );
 
 // Delete a user by ID
@@ -125,11 +128,11 @@ router.delete(
       const { id } = req.params;
 
       if (!id) {
-        res.status(400).json({ error: "Missing required field: id" });
+        res.status(400).json({ error: "Missing required field: ID" });
         return;
       }
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        res.status(400).json({ error: "incorrect id format" });
+        res.status(400).json({ error: "Incorrect ID format" });
         return;
       }
       const user = await deleteUserById(id);
@@ -146,10 +149,13 @@ router.delete(
       });
       return;
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error("Error deleting user by ID:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to delete user", details: error.message });
       return;
     }
-  },
+  }
 );
 
 export default router;

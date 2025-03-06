@@ -1,8 +1,7 @@
 import LoadingScreen from "@/components/LoadingScreen";
-import useAuthTokens from "@/hooks/useAuthTokens";
+import useApiRequests from "@/hooks/useApiRequests";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { Post, newPost } from "@/types/forum";
-import axios from "axios";
 import { useEffect, useState } from "react";
 
 import NewPostForm from "../components/NewPostForm";
@@ -13,21 +12,14 @@ export const ForumPage = () => {
   const [activeTab, setActiveTab] = useState<Tab>("myPosts");
   const [posts, setPosts] = useState<Post[] | undefined>(undefined);
   const [loading, setLoading] = useState(true);
-  const { getTokens } = useAuthTokens();
   const { getItem } = useLocalStorage("userId");
   const userId = getItem();
-  const ApiEndpoint = import.meta.env.VITE_SERVER_URL;
-  const tokens = getTokens();
+  const api = useApiRequests();
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const postsRes = await axios.get(`${ApiEndpoint}/posts/`, {
-          headers: {
-            Authorization: `Bearer ${tokens.accessToken}`,
-          },
-        });
-
+        const postsRes = await api.get("/posts/");
         setPosts(postsRes.data);
         setLoading(false);
       } catch (err) {
@@ -73,15 +65,7 @@ export const ForumPage = () => {
 
   const likePost = async (postId: string) => {
     try {
-      await axios.post(
-        `${ApiEndpoint}/likes`,
-        { postId },
-        {
-          headers: {
-            Authorization: `Bearer ${tokens.accessToken}`,
-          },
-        }
-      );
+      await api.post("/likes", { postId });
     } catch (error) {
       console.error(error);
       throw new Error("Failed to like post");
@@ -90,11 +74,7 @@ export const ForumPage = () => {
 
   const unlikePost = async (postId: string) => {
     try {
-      await axios.delete(`${ApiEndpoint}/likes/${postId}`, {
-        headers: {
-          Authorization: `Bearer ${tokens.accessToken}`,
-        },
-      });
+      await api.delete(`/likes/${postId}`);
     } catch (error) {
       console.error(error);
       throw new Error("Failed to unlike post");
@@ -104,6 +84,23 @@ export const ForumPage = () => {
   const handleNewPostSubmit = (newPost: newPost) => {
     // Handle new post submission logic here
     console.log("New post submitted:", newPost);
+  };
+
+  const handleCommentSubmit = async (postId: string, content: string) => {
+    try {
+      const response = await api.post("/comments/", { content, postId });
+      const updatedPosts = posts?.map((post) =>
+        post._id === postId
+          ? {
+              ...post,
+              comments: [...post.comments, response.data],
+            }
+          : post
+      );
+      setPosts(updatedPosts);
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
   };
 
   if (loading) {
@@ -145,11 +142,19 @@ export const ForumPage = () => {
       {activeTab === "myPosts" && (
         <div>
           <NewPostForm handleNewPostSubmit={handleNewPostSubmit} />
-          <Posts posts={getOwnPosts()} togglePostLike={togglePostLike} />
+          <Posts
+            posts={getOwnPosts()}
+            togglePostLike={togglePostLike}
+            onCommentSubmit={handleCommentSubmit}
+          />
         </div>
       )}
       {activeTab === "Explore" && (
-        <Posts posts={getFriendsPosts()} togglePostLike={togglePostLike} />
+        <Posts
+          posts={getFriendsPosts()}
+          togglePostLike={togglePostLike}
+          onCommentSubmit={handleCommentSubmit}
+        />
       )}
     </div>
   );
