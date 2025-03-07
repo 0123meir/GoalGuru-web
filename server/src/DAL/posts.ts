@@ -71,6 +71,7 @@ const getRecentPosts = async (userId: string) => {
           publishTime: 1,
           imageUrls: 1,
           "poster.username": 1,
+          "poster._id": 1,
           likesCount: { $size: "$likes" },
           comments: {
             $map: {

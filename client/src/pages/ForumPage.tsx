@@ -125,7 +125,7 @@ export const ForumPage = () => {
   }
 
   function getOwnPosts() {
-    return posts ? posts?.filter((post) => post._id === userId) : [];
+    return posts ? posts?.filter((post) => post.poster._id === userId) : [];
   }
 
   return (
