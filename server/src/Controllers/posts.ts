@@ -16,7 +16,7 @@ import {
 } from "../DAL/posts";
 import Post from "../db/postSchema";
 import { getUserById } from "../DAL/users";
-import { imagesDirectory } from "../config/config";
+import { postImagesDirectory, profileImagesDirectory } from "../config/config";
 
 const router = express.Router();
 
@@ -36,7 +36,7 @@ const upload = multer({
   },
 });
 
-const serverUrl = process.env.SERVER_URL || "http://localhost:3000/";
+const serverUrl = process.env.SERVER_URL || "http://localhost:3000";
 
 router.post(
   "/",
@@ -62,13 +62,13 @@ router.post(
       if (req.files) {
         for (const file of req.files as Express.Multer.File[]) {
           const imagePath = path.join(
-            imagesDirectory,
+            postImagesDirectory,
             `${Date.now()}-${file.originalname}`
           );
           await sharp(file.buffer)
             .resize(800, 800, { fit: "inside" })
             .toFile(imagePath);
-          imageUrls.push(`${serverUrl}${path.basename(imagePath)}`);
+          imageUrls.push(imagePath);
         }
       }
       const post = new Post({
@@ -107,9 +107,13 @@ router.get(
       const posts = await getRecentPosts(req.user.id);
       for (const post of posts) {
         post.imageUrls = post.imageUrls.map((url) => {
-          return `${serverUrl}${path.basename(url)}`;
+          return `${serverUrl}/images/${path.basename(url)}`;
         });
+        if (post.poster.profileImage) {
+          post.poster.profileImage = `${serverUrl}/profile_images/${path.basename(post.poster.profileImage)}`;
+        }
       }
+
       res.status(200).json(posts);
       return;
     } catch (err) {

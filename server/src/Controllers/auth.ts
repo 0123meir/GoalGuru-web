@@ -7,6 +7,9 @@ import { Response, Request, NextFunction } from "express";
 import { VerifyErrors } from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
 import { AuthenticatedRequest } from "../Middlewares/authMiddleware";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 
 interface UserProps {
   _id: string;
@@ -22,6 +25,21 @@ interface JwtPayload {
 const router = express.Router();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, "../../image_storage/profile_images");
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+const upload = multer({ storage });
+
 const extractUserProps = (user: any): UserProps => ({
   _id: user._id,
   username: user.username,
@@ -32,25 +50,30 @@ const extractUserProps = (user: any): UserProps => ({
 const sendError = (res: Response, errorMessage = "") =>
   res.status(400).json({ error: errorMessage });
 
-router.post("/register", async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { username, email, password } = req.body;
+router.post(
+  "/register",
+  upload.single("profileImage"),
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { username, email, password } = req.body;
+      const profileImage = req.file ? req.file.path : undefined;
 
-    if (!username || !email || !password) {
-      res.status(400).json({ error: "Missing required fields" });
+      if (!username || !email || !password) {
+        res.status(400).json({ error: "Missing required fields" });
+        return;
+      }
+
+      const user = await createUser(username, email, password, profileImage);
+
+      res.status(201).json(extractUserProps(user));
+      return;
+    } catch (error: any) {
+      console.error("Error during registration:", error.message);
+      sendError(res, error.message);
       return;
     }
-
-    const user = await createUser(username, email, password);
-
-    res.status(201).json(extractUserProps(user));
-    return;
-  } catch (error: any) {
-    console.error("Error during registration:", error.message);
-    sendError(res, error.message);
-    return;
   }
-});
+);
 
 router.post("/login", async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
@@ -76,12 +99,12 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
     const accessToken = jwt.sign(
       { _id: user._id },
       process.env.ACCESS_TOKEN_SECRET!,
-      { expiresIn: process.env.JWT_TOKEN_EXPIRATION! },
+      { expiresIn: process.env.JWT_TOKEN_EXPIRATION! }
     );
 
     const refreshToken = jwt.sign(
       { _id: user._id },
-      process.env.REFRESH_TOKEN_SECRET!,
+      process.env.REFRESH_TOKEN_SECRET!
     );
 
     if (!user.tokens) {
@@ -107,105 +130,123 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-router.post("/logout", async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
-  const authHeaders = req.headers["authorization"];
-  const token = authHeaders && authHeaders.split(" ")[1];
+router.post(
+  "/logout",
+  async (
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    const authHeaders = req.headers["authorization"];
+    const token = authHeaders && authHeaders.split(" ")[1];
 
-  if (!token) {
-    res.sendStatus(401);
-    return;
+    if (!token) {
+      res.sendStatus(401);
+      return;
+    }
+
+    jwt.verify(
+      token as string,
+      process.env.REFRESH_TOKEN_SECRET!,
+      async (err: VerifyErrors | null, userInfo: any) => {
+        if (err) {
+          res.status(403).send(err.message);
+          return;
+        }
+
+        const userId = (userInfo as JwtPayload)._id;
+        try {
+          const user = await User.findById(userId);
+          if (!user) {
+            res.status(403).send("Invalid request");
+            return;
+          }
+
+          if (!user.tokens.includes(token)) {
+            user.tokens = [];
+            await user.save();
+            res.status(403).send("Invalid request");
+            return;
+          }
+
+          user.tokens.splice(user.tokens.indexOf(token), 1);
+          await user.save();
+
+          res.status(200).send({ message: "Logout successful" });
+          return;
+        } catch (err: any) {
+          console.error("Error during logout:", err.message);
+          res.status(403).send({ message: err.message });
+          return;
+        }
+      }
+    );
   }
+);
 
-  jwt.verify(token as string, process.env.REFRESH_TOKEN_SECRET!, async (err: VerifyErrors | null, userInfo: any) => {
-    if (err) {
-      res.status(403).send(err.message);
+router.post(
+  "/refreshToken",
+  async (req: Request, res: Response): Promise<void> => {
+    const authHeaders = req.headers["authorization"];
+    const token = authHeaders && authHeaders.split(" ")[1];
+
+    if (!token) {
+      res.sendStatus(401);
       return;
     }
 
-    const userId = (userInfo as JwtPayload)._id;
-    try {
-      const user = await User.findById(userId);
-      if (!user) {
-        res.status(403).send("Invalid request");
-        return;
+    jwt.verify(
+      token as string,
+      process.env.REFRESH_TOKEN_SECRET!,
+      async (err: VerifyErrors | null, userInfo: any) => {
+        if (err) {
+          res.status(403).send(err.message);
+          return;
+        }
+
+        const userId = (userInfo as JwtPayload)._id;
+        try {
+          const user = await User.findById(userId);
+          if (!user) {
+            res.status(403).send("Invalid request");
+            return;
+          }
+
+          if (!user.tokens.includes(token)) {
+            user.tokens = [];
+            await user.save();
+            res.status(403).send("Invalid request");
+            return;
+          }
+
+          const accessToken = jwt.sign(
+            { _id: user._id },
+            process.env.ACCESS_TOKEN_SECRET!,
+            { expiresIn: process.env.JWT_TOKEN_EXPIRATION! }
+          );
+
+          const refreshToken = jwt.sign(
+            { _id: user._id },
+            process.env.REFRESH_TOKEN_SECRET!
+          );
+
+          user.tokens[user.tokens.indexOf(token)] = refreshToken;
+          await user.save();
+
+          res.status(200).send({
+            accessToken,
+            refreshToken,
+          });
+          return;
+        } catch (err: any) {
+          console.error("Error during token refresh:", err.message);
+          res.status(403).send(err.message);
+          return;
+        }
       }
-
-      if (!user.tokens.includes(token)) {
-        user.tokens = [];
-        await user.save();
-        res.status(403).send("Invalid request");
-        return;
-      }
-
-      user.tokens.splice(user.tokens.indexOf(token), 1);
-      await user.save();
-
-      res.status(200).send({ message: "Logout successful" });
-      return;
-    } catch (err: any) {
-      console.error("Error during logout:", err.message);
-      res.status(403).send({ message: err.message });
-      return;
-    }
-  });
-});
-
-router.post("/refreshToken", async (req: Request, res: Response): Promise<void> => {
-  const authHeaders = req.headers["authorization"];
-  const token = authHeaders && authHeaders.split(" ")[1];
-
-  if (!token) {
-    res.sendStatus(401);
-    return;
+    );
   }
-
-  jwt.verify(token as string, process.env.REFRESH_TOKEN_SECRET!, async (err: VerifyErrors | null, userInfo: any) => {
-    if (err) {
-      res.status(403).send(err.message);
-      return;
-    }
-
-    const userId = (userInfo as JwtPayload)._id;
-    try {
-      const user = await User.findById(userId);
-      if (!user) {
-        res.status(403).send("Invalid request");
-        return;
-      }
-
-      if (!user.tokens.includes(token)) {
-        user.tokens = [];
-        await user.save();
-        res.status(403).send("Invalid request");
-        return;
-      }
-
-      const accessToken = jwt.sign(
-        { _id: user._id },
-        process.env.ACCESS_TOKEN_SECRET!,
-        { expiresIn: process.env.JWT_TOKEN_EXPIRATION! },
-      );
-
-      const refreshToken = jwt.sign(
-        { _id: user._id },
-        process.env.REFRESH_TOKEN_SECRET!,
-      );
-
-      user.tokens[user.tokens.indexOf(token)] = refreshToken;
-      await user.save();
-
-      res.status(200).send({
-        accessToken,
-        refreshToken,
-      });
-      return;
-    } catch (err: any) {
-      console.error("Error during token refresh:", err.message);
-      res.status(403).send(err.message);
-      return;
-    }
-  });
-});
+);
 
 router.post("/google", async (req: Request, res: Response) => {
   try {
@@ -223,8 +264,15 @@ router.post("/google", async (req: Request, res: Response) => {
       await user.save();
     }
 
-    const accessToken = jwt.sign({ _id: user._id }, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: process.env.JWT_TOKEN_EXPIRATION! });
-    const refreshToken = jwt.sign({ _id: user._id }, process.env.REFRESH_TOKEN_SECRET!);
+    const accessToken = jwt.sign(
+      { _id: user._id },
+      process.env.ACCESS_TOKEN_SECRET!,
+      { expiresIn: process.env.JWT_TOKEN_EXPIRATION! }
+    );
+    const refreshToken = jwt.sign(
+      { _id: user._id },
+      process.env.REFRESH_TOKEN_SECRET!
+    );
 
     user.tokens.push(refreshToken);
     await user.save();
@@ -233,7 +281,9 @@ router.post("/google", async (req: Request, res: Response) => {
     return;
   } catch (error) {
     console.error("Error during Google authentication:", error);
-    res.status(401).json({ error: "Invalid Google token", details: error.message });
+    res
+      .status(401)
+      .json({ error: "Invalid Google token", details: error.message });
     return;
   }
 });

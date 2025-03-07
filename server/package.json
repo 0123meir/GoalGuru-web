@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "start": "nodemon --exec ts-node src/index.ts localhost 5000",
+    "start": "nodemon --exec ts-node src/index.ts localhost 3000",
     "build": "rimraf ./dist & tsc -p .",
     "format": "prettier --write '**/*.{js,ts}'",
     "test": "npm run build & jest dist/"

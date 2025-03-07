@@ -1,6 +1,9 @@
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 import authenticate from "../Middlewares/authMiddleware";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 import {
   getAllUsers,
   deleteUserById,
@@ -10,11 +13,25 @@ import {
 
 const router = express.Router();
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, "../../image_storage/profile_images");
+
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+const upload = multer({ storage });
+
 interface User {
   _id: mongoose.Types.ObjectId;
   username: string;
   email: string;
   tokens: string[];
+  profileImage: string;
 }
 
 const extractUserProps = (user: User) => ({
@@ -22,6 +39,7 @@ const extractUserProps = (user: User) => ({
   username: user.username,
   email: user.email,
   tokens: user.tokens,
+  profileImage: user.profileImage,
 });
 
 router.get(
@@ -80,10 +98,12 @@ router.get(
 router.put(
   "/:id",
   authenticate,
+  upload.single("profileImage"),
   async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
       const { username, email, password } = req.body;
+      const profileImage = req.file ? req.file.path : undefined;
 
       if (username === "" || email === "" || password === "") {
         res.status(400).json({ error: "Cannot update to empty fields" });
@@ -99,7 +119,13 @@ router.put(
         res.status(400).json({ error: "Incorrect ID format" });
         return;
       }
-      const updatedUser = await updateUserById(id, username, email, password);
+      const updatedUser = await updateUserById(
+        id,
+        username,
+        email,
+        password,
+        profileImage
+      ); 
       if (!updatedUser) {
         res.status(400).json({ error: "User not found" });
         return;

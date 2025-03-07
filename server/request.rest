@@ -1,9 +1,9 @@
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2MwNzJkZGM1YzU3ZjgxZDYwYWZlMjYiLCJpYXQiOjE3NDEzMDM0MDgsImV4cCI6MTc0MTM4OTgwOH0.SJ2SL3WSAGauea2o9HXT173-3IbK24ceAMrHdKJ11bU 
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2NhNDZkN2RkM2EwNjU0NzEzYzdjMDgiLCJpYXQiOjE3NDEzMDk4MDksImV4cCI6MTc0MTM5NjIwOX0.IW4Be0PNUcaxESM4Hp0lFgsALgEjWMLDSIz1k0qSDkg
 @refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2MwNzJkZGM1YzU3ZjgxZDYwYWZlMjYiLCJpYXQiOjE3NDEzMDM0MDh9.dVOFbI8bJr9__Gb8d9aZTVwGSM3XL6y7HBVSxGUF_Rc
-@posterId = 67c072ddc5c57f81d60afe26
+@posterId = 67ca46d7dd3a0654713c7c08
 @postId = 67c345030517efec8c22b4bf
 @commentId = 6748901949152b8687e00985
-@userId = 67c072ddc5c57f81d60afe26
+@userId = 67ca46d7dd3a0654713c7c08
 
 ### posts API
 
@@ -13,7 +13,7 @@ Authorization: Bearer {{token}}
 
 {
     "posterId": "{{posterId}}",
-    "description": "test for likes"
+    "description": "test for profile image"
 }
 ###
 
@@ -122,9 +122,9 @@ POST http://localhost:3000/auth/register
 Content-Type: application/json
 
 {
-    "username": "newuser",
-    "email": "newuser@example.com",
-    "password": "securepassword"
+    "username": "testImageUser",
+    "email": "testUser@example.com",
+    "password": "1234"
 }
 ###
 
@@ -132,7 +132,7 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-    "email": "0123meir@gmail.com",
+    "email": "testUser@example.com",
     "password": "1234"
 }
 ###
