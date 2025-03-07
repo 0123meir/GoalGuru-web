@@ -7,7 +7,7 @@ export interface Post {
   _id: string;
   description: string;
   publishTime: Date;
-  images: string[];
+  imageUrls: string[];
   poster: {
     profileImage: string;
     username: string;

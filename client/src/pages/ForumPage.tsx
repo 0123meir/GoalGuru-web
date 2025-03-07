@@ -1,7 +1,7 @@
 import LoadingScreen from "@/components/LoadingScreen";
 import useApiRequests from "@/hooks/useApiRequests";
 import useLocalStorage from "@/hooks/useLocalStorage";
-import { Post, newPost } from "@/types/forum";
+import { Post } from "@/types/forum";
 import { useEffect, useState } from "react";
 
 import NewPostForm from "../components/NewPostForm";
@@ -81,9 +81,22 @@ export const ForumPage = () => {
     }
   };
 
-  const handleNewPostSubmit = (newPost: newPost) => {
-    // Handle new post submission logic here
-    console.log("New post submitted:", newPost);
+  const handleNewPostSubmit = async (formData: FormData) => {
+    try {
+      const response = await api.post("/posts", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const newPost = {
+        ...response.data.post,
+        publishDate: new Date(response.data.post.publishDate),
+      };
+      setPosts((prevPosts) => [newPost, ...(prevPosts || [])]);
+    } catch (error) {
+      console.error("Error submitting new post:", error);
+    }
   };
 
   const handleCommentSubmit = async (postId: string, content: string) => {
@@ -93,7 +106,7 @@ export const ForumPage = () => {
         post._id === postId
           ? {
               ...post,
-              comments: [...post.comments, response.data],
+              comments: [...post.comments, response.data.comment],
             }
           : post
       );

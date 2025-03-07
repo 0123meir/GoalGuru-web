@@ -4,6 +4,7 @@ export interface IPost extends Document {
   description: string;
   posterId: mongoose.Schema.Types.ObjectId;
   publishTime: Date;
+  imageUrls?: string[];
 }
 
 const postSchema: Schema<IPost> = new mongoose.Schema({
@@ -19,6 +20,9 @@ const postSchema: Schema<IPost> = new mongoose.Schema({
   publishTime: {
     type: Date,
     default: Date.now,
+  },
+  imageUrls: {
+    type: [String],
   },
 });
 

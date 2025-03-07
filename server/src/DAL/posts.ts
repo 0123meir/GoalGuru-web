@@ -1,10 +1,9 @@
 import Post, { IPost } from "../db/postSchema";
 import { ObjectId } from "mongodb";
 
-const savePost = async (post: IPost) => {
-  const newPost = new Post(post);
+const savePost = async (post) => {
   try {
-    return await newPost.save();
+    return await post.save();
   } catch (err) {
     console.error("Post saving error: ", err);
   }
@@ -70,6 +69,7 @@ const getRecentPosts = async (userId: string) => {
         $project: {
           description: 1,
           publishTime: 1,
+          imageUrls: 1,
           "poster.username": 1,
           likesCount: { $size: "$likes" },
           comments: {

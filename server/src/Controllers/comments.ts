@@ -12,6 +12,7 @@ import { getPostsById } from "../DAL/posts";
 import authenticate, {
   AuthenticatedRequest,
 } from "../Middlewares/authMiddleware";
+import { getUserById } from "../DAL/users";
 
 const router = express.Router();
 
@@ -41,11 +42,12 @@ router.post(
         res.status(400).json({ error: "Post does not exist" });
         return;
       }
-
+      const poster = await getUserById(userId);
       const addedComment = await saveComment({
         content,
         postId,
         commentorId: userId,
+        username: poster.username,
       });
 
       res.json({
@@ -129,12 +131,10 @@ router.put(
       return;
     } catch (err) {
       console.error("Error updating comment by ID:", err);
-      res
-        .status(500)
-        .json({
-          error: "Failed to update comment by ID",
-          details: err.message,
-        });
+      res.status(500).json({
+        error: "Failed to update comment by ID",
+        details: err.message,
+      });
       return;
     }
   }
@@ -202,12 +202,10 @@ router.get(
       return;
     } catch (err) {
       console.error("Error fetching comments by post ID:", err);
-      res
-        .status(500)
-        .json({
-          error: "Failed to fetch comments by post ID",
-          details: err.message,
-        });
+      res.status(500).json({
+        error: "Failed to fetch comments by post ID",
+        details: err.message,
+      });
       return;
     }
   }

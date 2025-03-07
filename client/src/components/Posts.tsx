@@ -18,7 +18,7 @@ export const Posts = ({
   onCommentSubmit,
 }: PostsProps) => {
   const getUserPhoto = (post: Post): string | undefined =>
-    post.poster.profileImage ?? defaultUserImage;
+    post.poster?.profileImage ?? defaultUserImage;
   const formatPublishTime = (publishTime: Date): string => {
     return formatDistanceToNow(publishTime);
   };
@@ -52,11 +52,11 @@ export const Posts = ({
           </div>
           <div className="mb-4">{post.description}</div>
           <hr className="my-2" />
-          {post.images && (
+          {post.imageUrls && (
             <div className="w-full flex justify-center mb-4">
               <div className="w-1/2">
                 <Carousel showThumbs={false} infiniteLoop useKeyboardArrows>
-                  {post.images.map((image: string, index: number) => (
+                  {post.imageUrls.map((image: string, index: number) => (
                     <div
                       key={index}
                       className="flex justify-center bg-gray-100"

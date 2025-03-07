@@ -13,6 +13,7 @@ import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 
 import swaggerOptions from "../swagger.json";
+import { imagesDirectory } from "./config/config";
 
 const app = express();
 connect();
@@ -25,6 +26,7 @@ app.use(cors({
   }));
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerOptions));
+app.use("/images", express.static(imagesDirectory));
 app.use("/posts", postRouter);
 app.use("/comments", commentRouter);
 app.use("/likes", likesRouter);
