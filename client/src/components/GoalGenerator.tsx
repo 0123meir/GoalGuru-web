@@ -54,7 +54,7 @@ const GoalGenerator = () => {
             key={idx}
             className={`p-3 rounded-lg max-w-xs ${
               msg.role === "user"
-                ? "bg-blue-500 text-white self-end"
+                ? "bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white self-end"
                 : "bg-gray-200 text-black self-start"
             }`}
           >
