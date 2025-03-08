@@ -16,8 +16,8 @@ interface GoalStore {
 
 const useGoalStore = create<GoalStore>((set) => ({
   goals: [],
-  setGoals: (goals: Goal[]) => set({goals}),
-  addGoal: (id, name, steps= []) =>
+  setGoals: (goals: Goal[]) => set({ goals }),
+  addGoal: (id, name, steps = []) =>
     set((state) => ({
       goals: [...state.goals, { id, name, completed: false, steps: steps }],
     })),
@@ -53,7 +53,9 @@ const useGoalStore = create<GoalStore>((set) => ({
           ? {
               ...goal,
               steps: goal.steps.map((step) =>
-                step.id === stepId ? { ...step, completed: !step.completed } : step
+                step.id === stepId
+                  ? { ...step, completed: !step.completed }
+                  : step
               ),
             }
           : goal
@@ -85,13 +87,13 @@ const useGoalStore = create<GoalStore>((set) => ({
           : goal
       ),
     })),
-    reorderGoals: (startIndex: number, endIndex: number) => set((state) => {
-        const reorderedGoals = Array.from(state.goals);
-        const [removed] = reorderedGoals.splice(startIndex, 1);
-        reorderedGoals.splice(endIndex, 0, removed);
-        return { goals: reorderedGoals };
+  reorderGoals: (startIndex: number, endIndex: number) =>
+    set((state) => {
+      const reorderedGoals = Array.from(state.goals);
+      const [removed] = reorderedGoals.splice(startIndex, 1);
+      reorderedGoals.splice(endIndex, 0, removed);
+      return { goals: reorderedGoals };
     }),
-}
-));
+}));
 
 export default useGoalStore;

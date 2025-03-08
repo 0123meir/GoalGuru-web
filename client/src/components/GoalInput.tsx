@@ -5,17 +5,17 @@ import { FaPlus } from "react-icons/fa";
 
 const GoalInput = () => {
   const [newGoal, setNewGoal] = useState<string>("");
-  const {addGoal} = useGoalStore()
+  const { addGoal } = useGoalStore();
   const api = useApiRequests();
 
   const handleAddGoal = async () => {
     if (newGoal.trim()) {
       try {
-        const response = await api.post("/goals", {name: newGoal})
-        addGoal(response.data.goal._id, response.data.goal.name,[]);
+        const response = await api.post("/goals", { name: newGoal });
+        addGoal(response.data.goal._id, response.data.goal.name, []);
         setNewGoal("");
       } catch (err) {
-        console.error(err)
+        console.error(err);
       }
     }
   };

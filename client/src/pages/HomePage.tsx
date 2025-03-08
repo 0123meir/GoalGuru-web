@@ -15,14 +15,22 @@ export const HomePage = () => {
 
   return (
     <div className="flex h-screen">
-      <GoalList/>
-      <GoalGenerator/>
+      <GoalList />
+      <GoalGenerator />
       <div className="grow">
-      <h1 className="text-3xl">Welcome to Home</h1>
-      <button onClick={() => navigate("/forum") } className="mt-4 bg-red-500 text-white p-2" >Forum</button>
-      <button onClick={handleLogout} className="mt-4 bg-red-500 text-white p-2">
-        Logout
-      </button>
+        <h1 className="text-3xl">Welcome to Home</h1>
+        <button
+          onClick={() => navigate("/forum")}
+          className="mt-4 bg-red-500 text-white p-2"
+        >
+          Forum
+        </button>
+        <button
+          onClick={handleLogout}
+          className="mt-4 bg-red-500 text-white p-2"
+        >
+          Logout
+        </button>
       </div>
     </div>
   );

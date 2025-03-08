@@ -8,7 +8,7 @@ type GoalStepsInputProps = {
 
 const GoalStepsInput: React.FC<GoalStepsInputProps> = ({ goalId }) => {
   const [newStep, setNewStep] = useState("");
-  const {addStep} = useStepApi();
+  const { addStep } = useStepApi();
   const handleAddStep = () => {
     if (newStep.trim()) {
       addStep(goalId, newStep);

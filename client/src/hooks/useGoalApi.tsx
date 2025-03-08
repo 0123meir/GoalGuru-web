@@ -1,20 +1,26 @@
-import { useCallback } from "react";
-import useGoalStore from "@/store/useGoalStore";
 import useApiRequest from "@/hooks/useApiRequests";
-import { Goal } from "@/types/goals";
+import useGoalStore from "@/store/useGoalStore";
 import { GoalDTO } from "@/types/dtos";
+import { Goal } from "@/types/goals";
+import { useCallback } from "react";
 
-export const useGoalApi =() => {
+export const useGoalApi = () => {
   const { goals, setGoals, removeGoal } = useGoalStore();
   const api = useApiRequest();
 
   const getAllGoals = useCallback(async () => {
     try {
       const response = await api.get("goals/sender");
-      setGoals(response.data.map((goal: GoalDTO)=> {
-        const parsedResponse = {...goal, id: goal._id, steps: goal.steps.map((step) => ({...step, id: step._id}))}
-        return parsedResponse;
-    }));
+      setGoals(
+        response.data.map((goal: GoalDTO) => {
+          const parsedResponse = {
+            ...goal,
+            id: goal._id,
+            steps: goal.steps.map((step) => ({ ...step, id: step._id })),
+          };
+          return parsedResponse;
+        })
+      );
     } catch (error) {
       console.error("Failed to fetch goals", error);
     }
@@ -37,8 +43,15 @@ export const useGoalApi =() => {
   const updateGoal = useCallback(
     async (id: string, updates: Goal) => {
       try {
-        const updatedGoal = await api.put(`/goals/${id}`, {completed: updates.completed, name: updates.name});
-        setGoals(goals.map((goal) => (goal.id === id ? updatedGoal.data as Goal : goal)));
+        const updatedGoal = await api.put(`/goals/${id}`, {
+          completed: updates.completed,
+          name: updates.name,
+        });
+        setGoals(
+          goals.map((goal) =>
+            goal.id === id ? (updatedGoal.data as Goal) : goal
+          )
+        );
       } catch (error) {
         console.error("Failed to update goal", error);
       }
@@ -50,7 +63,7 @@ export const useGoalApi =() => {
     async (id: string) => {
       try {
         await api.delete(`/goals/${id}`);
-        removeGoal(id)
+        removeGoal(id);
       } catch (error) {
         console.error("Failed to delete goal", error);
       }
@@ -59,4 +72,4 @@ export const useGoalApi =() => {
   );
 
   return { getAllGoals, addGoal, updateGoal, deleteGoal };
-}
+};
