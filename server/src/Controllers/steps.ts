@@ -79,19 +79,20 @@ router.put(
   authenticate,
   async (req: Request, res: Response): Promise<void> => {
     try {
+      const id = req.params.id;
       const newContent = req.body.description;
       const completed = req.body.completed;
       if (!newContent || completed == undefined) {
         res.status(400).json("required body not provided");
         return;
       }
-      if (typeof newContent !== "string" || typeof completed !== 'boolean'
+      if (typeof newContent !== "string" || typeof completed !== 'boolean' || !mongoose.Types.ObjectId.isValid(id)
       ) {
         res.status(400).json("wrong type body parameters");
         return;
       }
 
-      const updatedStep = await updateStepById(req.params.id, newContent, completed);
+      const updatedStep = await updateStepById(id, newContent, completed);
       if (!updatedStep) {
         res.status(404).json({
           error: "Step not found",

@@ -31,18 +31,18 @@ export const useStepApi = () => {
         completed: updates.completed,
       });
 
-      setGoals(
-        goals.map((goal: Goal) =>
-          goal.id === response.data.goal._id
-            ? ({
-                ...goal,
-                steps: goal.steps.map((step) =>
-                  step.id === response.data._id ? response.data : step
-                ),
-              } as Goal)
-            : goal
-        )
-      );
+      const newGoals = goals.map((goal: Goal) =>
+        goal.id === response.data.goal._id
+          ? ({
+              ...goal,
+              steps: goal.steps.map((step) =>
+                step.id === response.data._id ? response.data : step
+              ),
+            } as Goal)
+          : goal
+      )
+      setGoals(newGoals);
+      
     } catch (error) {
       console.error("Failed to update step", error);
     }

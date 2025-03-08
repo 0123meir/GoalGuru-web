@@ -17,7 +17,7 @@ const GoalList = () => {
   }, []);
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-lg flex flex-col w-1/3 overflow-y-auto">
+    <div className="p-6 bg-white rounded-lg shadow-lg flex flex-col w-2/3 overflow-y-auto">
       <h2 className="text-2xl font-bold text-center mb-4 text-gray-800">
         My Goals
       </h2>

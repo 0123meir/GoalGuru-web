@@ -24,7 +24,7 @@ const GoalStepsInput: React.FC<GoalStepsInputProps> = ({ goalId }) => {
         value={newStep}
         onChange={(e) => setNewStep(e.target.value)}
         placeholder="New Step"
-        className="flex-1 p-2 border rounded focus:outline-blue-500"
+        className="flex-1 px-4 py-2 border rounded focus:outline-blue-500 rounded-full"
       />
       <button
         onClick={handleAddStep}
