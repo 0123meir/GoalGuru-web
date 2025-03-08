@@ -2,10 +2,13 @@ services:
   mongodb:
     image: mongo
     container_name: mongodb
+    env_file:
+      - .env
     ports:
       - "27017:27017"
     volumes:
       - ./data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
   server:
     image: goal-guru-server:latest
     container_name: server
