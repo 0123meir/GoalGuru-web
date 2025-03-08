@@ -17,8 +17,6 @@ export const Posts = ({
   togglePostLike,
   onCommentSubmit,
 }: PostsProps) => {
-  const getUserPhoto = (post: Post): string | undefined =>
-    post.poster?.profileImage ?? defaultUserImage;
   const formatPublishTime = (publishTime: Date): string => {
     return formatDistanceToNow(publishTime);
   };
@@ -39,8 +37,8 @@ export const Posts = ({
         >
           <div className="flex items-center mb-4">
             <img
-              src={getUserPhoto(post)}
-              alt="User"
+              src={post.poster.profileImage || defaultUserImage}
+              alt={defaultUserImage}
               className="w-12 h-12 rounded-full mr-4"
             />
             <div>
@@ -63,7 +61,7 @@ export const Posts = ({
                     >
                       <img
                         src={image}
-                        alt="Post"
+                        alt={"Post"}
                         className="object-contain h-64 w-full rounded-lg"
                       />
                     </div>
