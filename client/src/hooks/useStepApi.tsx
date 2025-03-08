@@ -36,13 +36,14 @@ export const useStepApi = () => {
           ? ({
               ...goal,
               steps: goal.steps.map((step) =>
-                step.id === response.data._id ? {...response.data, id: response.data._id} : step
+                step.id === response.data._id
+                  ? { ...response.data, id: response.data._id }
+                  : step
               ),
             } as Goal)
           : goal
-      )
+      );
       setGoals(newGoals);
-
     } catch (error) {
       console.error("Failed to update step", error);
     }

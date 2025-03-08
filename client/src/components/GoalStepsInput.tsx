@@ -24,6 +24,11 @@ const GoalStepsInput: React.FC<GoalStepsInputProps> = ({ goalId }) => {
         value={newStep}
         onChange={(e) => setNewStep(e.target.value)}
         placeholder="New Step"
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            handleAddStep();
+          }
+        }}
         className="pl-4 py-2 border focus:outline-blue-500 rounded-full grow"
       />
       <button

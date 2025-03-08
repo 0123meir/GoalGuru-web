@@ -20,9 +20,13 @@ const GoalStep: React.FC<GoalStepProps> = ({ step }) => {
       >
         {step.completed ? <FaCheckCircle /> : <FaRegCircle />}
       </button>
-      <span className={`flex-1 ${
-              step.completed ? "line-through text-gray-500" : "text-gray-800"
-            }`}>{step.description}</span>
+      <span
+        className={`flex-1 ${
+          step.completed ? "line-through text-gray-500" : "text-gray-800"
+        }`}
+      >
+        {step.description}
+      </span>
       <button
         onClick={() => deleteStep(step.id)}
         className="text-red-500 hover:text-red-700 mx-2"

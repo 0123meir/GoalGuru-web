@@ -24,6 +24,11 @@ const GoalInput = () => {
         type="text"
         value={newGoal}
         onChange={(e) => setNewGoal(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            handleAddGoal();
+          }
+        }}
         placeholder="New Goal"
         className="border rounded-full shadow-sm px-4 py-2 focus:outline-none bg-gray-50 flex-grow"
       />
