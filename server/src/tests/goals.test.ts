@@ -36,6 +36,7 @@ beforeEach(async () => {
   const sampleGoal = new Goal({
     name: "Sample Goal",
     creatorId: creatorId,
+    completed: true
   });
   const savedGoal = await sampleGoal.save();
   goalId = savedGoal._id as ObjectId;
@@ -55,6 +56,7 @@ describe("Testing Goal Routes", () => {
         .send({
           name: "Hello, world!",
           creatorId: creatorId,
+          completed: false
         });
 
       expect(res.statusCode).toBe(200);
@@ -79,6 +81,7 @@ describe("Testing Goal Routes", () => {
         .send({
           name: 12345,
           steps: "123",
+          completed: "abc"
         });
 
       expect(res.statusCode).toBe(400);

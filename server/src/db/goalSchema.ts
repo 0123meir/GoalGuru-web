@@ -15,7 +15,8 @@ const goalSchema: Schema<IGoal> = new mongoose.Schema({
   },
   completed: {
     type: Boolean,
-    required: true,
+    required: false,
+    default: false
   },
   creatorId: {
     type: mongoose.Schema.Types.ObjectId,

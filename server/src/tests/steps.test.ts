@@ -146,6 +146,7 @@ describe("Step Routes Tests", () => {
       .set("Authorization", "Bearer " + accessToken)
       .send({
         description: "Updated step description",
+        completed: true,
       });
 
     expect(res.statusCode).toBe(200);
