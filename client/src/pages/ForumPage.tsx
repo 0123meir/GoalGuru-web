@@ -88,6 +88,7 @@ export const ForumPage = () => {
           "Content-Type": "multipart/form-data",
         },
       });
+console.log(response.data.post);
 
       const newPost = {
         ...response.data.post,

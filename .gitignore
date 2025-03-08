@@ -47,6 +47,7 @@ lerna-debug.log*
 .temp
 .tmp
 post_pictures/
+profile_pictures/
 # Runtime data
 pids
 *.pid
