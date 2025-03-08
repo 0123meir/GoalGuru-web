@@ -38,9 +38,9 @@ router.post(
         response_format: { type: "json_object" },
       });
 
-      const parsedTodos = JSON.parse(response.choices[0].message.content);
-      const name = parsedTodos.name;
-      const steps = parsedTodos.steps;
+      const parsedGoals = JSON.parse(response.choices[0].message.content);
+      const name = parsedGoals.name;
+      const steps = parsedGoals.steps;
       const goal = await saveGoal({ name, creatorId } as IGoal);
       await Promise.all(
         steps.map(
@@ -53,7 +53,7 @@ router.post(
         ),
       );
       const stepsResponse = await getStepsByGoalId(goal._id as string);
-      res.json({ steps: stepsResponse, name: name });
+      res.json({ steps: stepsResponse, name: name, _id: goal.id });
       return;
     } catch (error) {
       console.log(error);

@@ -11,7 +11,7 @@ const saveGoal = async (goal: IGoal) => {
 
 const getGoalById = async (id: string) => {
   try {
-    return await Goal.findById(id);
+    return await Goal.findById(id).populate("steps").exec();
   } catch (err) {
     console.error("Goals retrieving failed: ", err);
   }
@@ -19,14 +19,14 @@ const getGoalById = async (id: string) => {
 
 const getAllGoals = async () => {
   try {
-    return await Goal.find();
+    return await Goal.find().populate("steps").exec();;
   } catch (err) {
     console.error("Goals retrieving failed: ", err);
   }
 };
 
-const updateGoalById = async (id: string, name: string) => {
-  return await Goal.findByIdAndUpdate(id, { name }, { new: true });
+const updateGoalById = async (id: string, name: string, completed: boolean) => {
+  return await Goal.findByIdAndUpdate(id, { name, completed }, { new: true }).populate("steps").exec();;
 };
 
 const deleteGoalById = async (id: string) => {
@@ -39,7 +39,7 @@ const deleteGoalById = async (id: string) => {
 
 const getGoalsByCreatorId = async (creatorId: string) => {
   try {
-    return await Goal.find({ creatorId });
+    return await Goal.find({ creatorId }).populate("steps").exec();;
   } catch (err) {
     console.error("Error retrieving Goals by creatorId: ", err);
   }

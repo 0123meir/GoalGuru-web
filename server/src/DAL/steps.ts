@@ -18,8 +18,8 @@ const getStepById = async (id: string) => {
   }
 };
 
-const updateStepById = async (id: string, content: string) => {
-  return await Step.findByIdAndUpdate(id, { content }, { new: true });
+const updateStepById = async (id: string, content: string, completed) => {
+  return await Step.findByIdAndUpdate(id, { content, completed }, { new: true });
 };
 
 const deleteStepById = async (step: IStep) => {
