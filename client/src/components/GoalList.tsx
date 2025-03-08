@@ -12,10 +12,10 @@ const GoalList = () => {
 
   useEffect(() => {
     getAllGoals();
-  }, []);
+  }, [getAllGoals]);
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-lg flex-1 flex flex-col max-w-max">
+    <div className="p-6 bg-white rounded-lg shadow-lg flex flex-col w-1/3">
       <h2 className="text-2xl font-bold text-center mb-4 text-gray-800">
         My Goals
       </h2>

@@ -1,18 +1,18 @@
 import useApiRequests from "@/hooks/useApiRequests";
-import useGoalStore from "@/store/useGoalStore";
+import { useGoalApi } from "@/hooks/useGoalApi";
 import { useState } from "react";
 import { FaPlus } from "react-icons/fa";
 
 const GoalInput = () => {
   const [newGoal, setNewGoal] = useState<string>("");
-  const { addGoal } = useGoalStore();
+  const { addGoal } = useGoalApi();
   const api = useApiRequests();
 
   const handleAddGoal = async () => {
     if (newGoal.trim()) {
       try {
-        const response = await api.post("/goals", { name: newGoal });
-        addGoal(response.data.goal._id, response.data.goal.name, []);
+        const response = await api.post("/goals", { name: newGoal, completed: false });
+        addGoal(response.data.goal);
         setNewGoal("");
       } catch (err) {
         console.error(err);
@@ -27,11 +27,11 @@ const GoalInput = () => {
         value={newGoal}
         onChange={(e) => setNewGoal(e.target.value)}
         placeholder="New Goal"
-        className="flex-1 p-2 border rounded focus:outline-blue-500"
+        className="border rounded-full shadow-sm px-4 py-2 focus:outline-none bg-gray-50 flex-grow"
       />
       <button
         onClick={handleAddGoal}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+        className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:outline-none font-medium rounded-full text-sm px-4 py-4 text-center"
       >
         <FaPlus />
       </button>

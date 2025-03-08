@@ -21,7 +21,7 @@ const GoalItem: React.FC<GoalItemProps> = ({ goal }) => {
   const { deleteGoal, updateGoal } = useGoalApi();
 
   return (
-    <div className="mb-4 p-4 border rounded-lg shadow-sm bg-gray-50">
+    <div className="mb-4 p-4 border rounded-xl shadow-sm bg-gray-50">
       <div
         className="flex justify-between items-center cursor-pointer"
         onClick={() => setExpanded(!expanded)}

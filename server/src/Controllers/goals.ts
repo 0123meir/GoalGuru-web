@@ -17,10 +17,10 @@ router.post(
   authenticate,
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const { name } = req.body;
+      const { name, completed } = req.body;
       const creatorId = req["user"]._id;
 
-      if (!name || !creatorId) {
+      if (!name || !creatorId || completed == undefined) {
         res.status(400).json("required body not provided");
         return;
       }
