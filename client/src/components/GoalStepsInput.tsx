@@ -18,17 +18,17 @@ const GoalStepsInput: React.FC<GoalStepsInputProps> = ({ goalId }) => {
   };
 
   return (
-    <div className="flex space-x-2 mt-3">
+    <div className="flex gap-2">
       <input
         type="text"
         value={newStep}
         onChange={(e) => setNewStep(e.target.value)}
         placeholder="New Step"
-        className="flex-1 px-4 py-2 border rounded focus:outline-blue-500 rounded-full"
+        className="pl-4 py-2 border focus:outline-blue-500 rounded-full grow"
       />
       <button
         onClick={handleAddStep}
-        className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white px-3 py-2 rounded hover:bg-green-600 transition"
+        className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white px-3 py-2 rounded-full"
       >
         <FaPlus />
       </button>

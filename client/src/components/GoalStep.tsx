@@ -14,7 +14,7 @@ const GoalStep: React.FC<GoalStepProps> = ({ step }) => {
     <div className="flex items-center justify-between bg-white px-3 py-2 rounded-full border">
       <button
         onClick={() =>
-          updateStep(step._id, { ...step, completed: !step.completed })
+          updateStep(step.id, { ...step, completed: !step.completed })
         }
         className="text-blue-500 mr-2"
       >

@@ -11,7 +11,7 @@ export const useGoalApi = () => {
   const { goals, setGoals, removeGoal } = useGoalStore();
   const api = useApiRequest();
 
-  const getAllGoals = useCallback(async () => {
+  const getAllGoals = async () => {
     try {
       const response = await api.get("goals/sender");
       setGoals(
@@ -19,7 +19,7 @@ export const useGoalApi = () => {
           const parsedResponse = {
             ...goal,
             id: goal._id,
-            steps: goal.steps.map((step) => ({ ...step, id: step._id })),
+            steps: goal.steps.map((step) => ({ ...step, id: step._id })), //TODO: Convert all from dto everywhere
           };
           return parsedResponse;
         })
@@ -27,7 +27,7 @@ export const useGoalApi = () => {
     } catch (error) {
       console.error("Failed to fetch goals", error);
     }
-  }, [api, setGoals]);
+  };
 
   const addGoal = useCallback(
     async (name: string, completed: boolean) => {
