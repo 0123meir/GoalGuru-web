@@ -9,5 +9,5 @@
       "module": "commonjs",
       "allowSyntheticDefaultImports": true,
     },
-    "include": ["./src/**/*"]
+    "include": ["./src/**/*", "./images_storage/**/*"],
   }

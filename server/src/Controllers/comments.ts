@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { Response } from "express";
 import mongoose from "mongoose";
 import {
   saveComment,
@@ -9,54 +9,66 @@ import {
   getCommentsByPostId,
 } from "../DAL/comments";
 import { getPostsById } from "../DAL/posts";
-import authenticate from "../Middlewares/authMiddleware";
+import authenticate, {
+  AuthenticatedRequest,
+} from "../Middlewares/authMiddleware";
+import { getUserById } from "../DAL/users";
 
 const router = express.Router();
 
 router.post(
   "/",
   authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const { content, senderId, postId } = req.body;
-      if (!content || !senderId || !postId) {
-        res.status(400).json("required body not provided");
+      const { content, postId } = req.body;
+      const userId = req.user.id;
+      if (!content || !postId) {
+        res.status(400).json({ error: "Required body not provided" });
         return;
       }
       if (
         typeof content !== "string" ||
-        typeof senderId !== "string" ||
         !mongoose.Types.ObjectId.isValid(postId)
       ) {
-        res.status(400).json("wrong type in one of the body parameters");
+        res
+          .status(400)
+          .json({ error: "Wrong type in one of the body parameters" });
         return;
       }
 
       const post = await getPostsById(postId);
       if (!post) {
-        res.status(400).json("post does not exist");
+        res.status(400).json({ error: "Post does not exist" });
         return;
       }
-
-      const addedComment = await saveComment(req.body);
+      const poster = await getUserById(userId);
+      const addedComment = await saveComment({
+        content,
+        postId,
+        commentorId: userId,
+        username: poster.username,
+      });
 
       res.json({
-        comment: "comment saved successfully",
-        post: addedComment,
+        message: "Comment saved successfully",
+        comment: addedComment,
       });
       return;
     } catch (error) {
-      console.log(error);
-      res.status(500).json({ error: error.message });
+      console.error("Error saving comment:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to save comment", details: error.message });
       return;
     }
-  },
+  }
 );
 
 router.get(
   "/:id",
   authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const comment = await getCommentById(req.params.id);
 
@@ -68,64 +80,70 @@ router.get(
       res.json(comment);
       return;
     } catch (err) {
-      console.log(err);
-      res.status(500).json({ error: err.message });
+      console.error("Error fetching comment by ID:", err);
+      res
+        .status(500)
+        .json({ error: "Failed to fetch comment by ID", details: err.message });
       return;
     }
-  },
+  }
 );
 
 router.get(
   "/",
   authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const comments = await getAllComments();
       res.json(comments);
       return;
     } catch (err) {
-      console.log(err);
-      res.status(500).json({ error: err.message });
+      console.error("Error fetching all comments:", err);
+      res
+        .status(500)
+        .json({ error: "Failed to fetch all comments", details: err.message });
       return;
     }
-  },
+  }
 );
 
 router.put(
   "/:id",
   authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const newContent = req.body.content;
       if (!newContent) {
-        res.status(400).json("required body not provided");
+        res.status(400).json({ error: "Required body not provided" });
         return;
       }
       if (typeof newContent !== "string") {
-        res.status(400).json("wrong type body parameters");
+        res.status(400).json({ error: "Wrong type body parameters" });
         return;
       }
 
       const updatedComment = await updateCommentById(req.params.id, newContent);
       if (!updatedComment) {
-        res.status(404).json({
-          error: "Comment not found",
-        });
+        res.status(404).json({ error: "Comment not found" });
         return;
       }
       res.json(updatedComment);
       return;
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      console.error("Error updating comment by ID:", err);
+      res.status(500).json({
+        error: "Failed to update comment by ID",
+        details: err.message,
+      });
       return;
     }
-  },
+  }
 );
 
 router.delete(
   "/:id",
   authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
 
@@ -147,17 +165,19 @@ router.delete(
       });
       return;
     } catch (err) {
-      console.log(err);
-      res.status(500).json({ error: err.message });
+      console.error("Error deleting comment by ID:", err);
+      res
+        .status(500)
+        .json({ error: "Failed to delete comment", details: err.message });
       return;
     }
-  },
+  }
 );
 
 router.get(
   "/post/:postId",
   authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const { postId } = req.params;
 
@@ -168,9 +188,7 @@ router.get(
 
       const post = await getPostsById(postId);
       if (!post) {
-        res.status(404).json({
-          error: "Post does not exist",
-        });
+        res.status(404).json({ error: "Post does not exist" });
         return;
       }
 
@@ -183,11 +201,14 @@ router.get(
       res.json(comments);
       return;
     } catch (err) {
-      console.log(err);
-      res.status(500).json({ error: err.message });
+      console.error("Error fetching comments by post ID:", err);
+      res.status(500).json({
+        error: "Failed to fetch comments by post ID",
+        details: err.message,
+      });
       return;
     }
-  },
+  }
 );
 
 export default router;

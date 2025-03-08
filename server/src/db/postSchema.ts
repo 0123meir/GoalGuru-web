@@ -1,19 +1,28 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface IPost extends Document {
-  message: string;
-  senderId: mongoose.Schema.Types.ObjectId;
+  description: string;
+  posterId: mongoose.Schema.Types.ObjectId;
+  publishTime: Date;
+  imageUrls?: string[];
 }
 
 const postSchema: Schema<IPost> = new mongoose.Schema({
-  message: {
+  description: {
     type: String,
     required: true,
   },
-  senderId: {
+  posterId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
+  },
+  publishTime: {
+    type: Date,
+    default: Date.now,
+  },
+  imageUrls: {
+    type: [String],
   },
 });
 

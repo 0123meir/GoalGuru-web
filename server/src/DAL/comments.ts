@@ -1,9 +1,13 @@
-import Comment from "../db/commentSchema";
+import Comment, { IComment } from "../db/commentSchema";
+import { getUserById } from "./users";
 
-const saveComment = async (comment: string) => {
+const saveComment = async (comment) => {
   const newComment = new Comment(comment);
   try {
-    return await newComment.save();
+    const savedComment = await newComment.save();
+    const user = await getUserById(savedComment.commentorId.toString());
+    
+    return { ...savedComment.toObject(), username: user.username };
   } catch (err) {
     console.error("Comment saving error: ", err);
   }

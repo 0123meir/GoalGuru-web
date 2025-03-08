@@ -9,6 +9,7 @@ import useAuthTokens from "./hooks/useAuthTokens";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { isValidToken } from "./utils/auth";
+import { ForumPage } from "./pages/ForumPage";
 
 const App = () => {
   const { getTokens } = useAuthTokens();
@@ -35,6 +36,14 @@ const App = () => {
           element={
             <PrivateRoute>
               <HomePage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="forum"
+          element={
+            <PrivateRoute>
+              <ForumPage />
             </PrivateRoute>
           }
         />
