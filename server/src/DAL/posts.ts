@@ -60,7 +60,7 @@ const getRecentPosts = async (userId: string) => {
       {
         $addFields: {
           isLikedByUser: {
-            $in: [userId, "$likes.userId"],
+            $in: [new ObjectId(userId), "$likes.userId"],
           },
         },
       },
@@ -74,6 +74,7 @@ const getRecentPosts = async (userId: string) => {
           "poster._id": 1,
           "poster.profileImage": 1,
           likesCount: { $size: "$likes" },
+          isLikedByUser: 1,
           comments: {
             $map: {
               input: "$comments",
