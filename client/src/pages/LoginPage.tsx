@@ -1,11 +1,14 @@
-import useAuthTokens from "@/hooks/useAuthTokens";
-import useLocalStorage from "@/hooks/useLocalStorage";
-import { APIError } from "@/types/api";
+import axios from "axios";
+
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import { GoogleCredentialResponse } from "@react-oauth/google";
-import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import useAuthTokens from "@/hooks/useAuthTokens";
+import useLocalStorage from "@/hooks/useLocalStorage";
+
+import { APIError } from "@/types/api";
 
 export const LoginPage = () => {
   const [email, setEmail] = useState<string>("");

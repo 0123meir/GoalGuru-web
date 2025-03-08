@@ -1,5 +1,6 @@
-import { Goal, Step } from "@/types/goals";
 import { create } from "zustand";
+
+import { Goal, Step } from "@/types/goals";
 
 interface GoalStore {
   goals: Goal[];

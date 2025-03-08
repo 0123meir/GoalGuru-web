@@ -1,7 +1,9 @@
+import { useNavigate } from "react-router-dom";
+
+import useAuthTokens from "@/hooks/useAuthTokens";
+
 import GoalGenerator from "@/components/GoalGenerator";
 import GoalList from "@/components/GoalList";
-import useAuthTokens from "@/hooks/useAuthTokens";
-import { useNavigate } from "react-router-dom";
 
 export const HomePage = () => {
   const navigate = useNavigate();
@@ -21,17 +23,14 @@ export const HomePage = () => {
         >
           Forum
         </button>
-        <button
-          onClick={handleLogout}
-          className="mt-4 text-white p-2"
-          >
+        <button onClick={handleLogout} className="mt-4 text-white p-2">
           Logout
         </button>
       </div>
-    <div className="flex grow">
-      <GoalList />
-      <GoalGenerator />
+      <div className="flex grow overflow-y-auto">
+        <GoalList />
+        <GoalGenerator />
+      </div>
     </div>
-          </div>
   );
 };

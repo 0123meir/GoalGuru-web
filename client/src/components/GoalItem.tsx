@@ -1,5 +1,3 @@
-import { useGoalApi } from "@/hooks/useGoalApi";
-import { Goal, Step } from "@/types/goals";
 import { useState } from "react";
 import {
   FaCheckCircle,
@@ -8,6 +6,10 @@ import {
   FaRegCircle,
   FaTrash,
 } from "react-icons/fa";
+
+import { useGoalApi } from "@/hooks/useGoalApi";
+
+import { Goal, Step } from "@/types/goals";
 
 import GoalStep from "./GoalStep";
 import GoalStepsInput from "./GoalStepsInput";

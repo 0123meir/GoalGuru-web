@@ -1,5 +1,7 @@
-import useApiRequest from "@/hooks/useApiRequests";
 import useGoalStore from "@/store/useGoalStore";
+
+import useApiRequest from "@/hooks/useApiRequests";
+
 import { StepDTO } from "@/types/dtos";
 import { Goal, Step } from "@/types/goals";
 

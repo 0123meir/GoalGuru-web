@@ -1,8 +1,11 @@
-import useApiRequest from "@/hooks/useApiRequests";
+import { useCallback } from "react";
+
 import useGoalStore from "@/store/useGoalStore";
+
+import useApiRequest from "@/hooks/useApiRequests";
+
 import { GoalDTO } from "@/types/dtos";
 import { Goal } from "@/types/goals";
-import { useCallback } from "react";
 
 export const useGoalApi = () => {
   const { goals, setGoals, removeGoal } = useGoalStore();
@@ -27,12 +30,13 @@ export const useGoalApi = () => {
   }, [api, setGoals]);
 
   const addGoal = useCallback(
-    async (goal: Goal) => {
+    async (name: string, completed: boolean) => {
       try {
         const response = await api.post("/goals", {
-          body: JSON.stringify(goal),
+          name: name,
+          completed: completed,
         });
-        setGoals([...goals, response.data]);
+        setGoals([...goals, response.data.goal]);
       } catch (error) {
         console.error("Failed to add goal", error);
       }

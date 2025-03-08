@@ -1,5 +1,6 @@
-import { useStepApi } from "@/hooks/useStepApi";
 import { FaCheckCircle, FaRegCircle, FaTrash } from "react-icons/fa";
+
+import { useStepApi } from "@/hooks/useStepApi";
 
 type GoalStepProps = {
   step: { id: string; description: string; completed: boolean };

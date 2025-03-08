@@ -1,6 +1,7 @@
-import { useStepApi } from "@/hooks/useStepApi";
 import { useState } from "react";
 import { FaPlus } from "react-icons/fa";
+
+import { useStepApi } from "@/hooks/useStepApi";
 
 type GoalStepsInputProps = {
   goalId: string;

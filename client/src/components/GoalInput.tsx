@@ -1,18 +1,16 @@
-import useApiRequests from "@/hooks/useApiRequests";
-import { useGoalApi } from "@/hooks/useGoalApi";
 import { useState } from "react";
 import { FaPlus } from "react-icons/fa";
+
+import { useGoalApi } from "@/hooks/useGoalApi";
 
 const GoalInput = () => {
   const [newGoal, setNewGoal] = useState<string>("");
   const { addGoal } = useGoalApi();
-  const api = useApiRequests();
 
   const handleAddGoal = async () => {
     if (newGoal.trim()) {
       try {
-        const response = await api.post("/goals", { name: newGoal, completed: false });
-        addGoal(response.data.goal);
+        addGoal(newGoal, false);
         setNewGoal("");
       } catch (err) {
         console.error(err);
