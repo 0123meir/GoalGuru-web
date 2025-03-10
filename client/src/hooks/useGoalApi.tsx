@@ -35,8 +35,9 @@ export const useGoalApi = () => {
         const response = await api.post("/goals", {
           name: name,
           completed: completed,
+          steps: []
         });
-        setGoals([...goals, response.data.goal]);
+        setGoals([...goals, {...response.data.goal,steps: []}]);
       } catch (error) {
         console.error("Failed to add goal", error);
       }
