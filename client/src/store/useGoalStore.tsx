@@ -20,7 +20,10 @@ const useGoalStore = create<GoalStore>((set) => ({
   setGoals: (goals: Goal[]) => set({ goals }),
   addGoal: (id, name, steps) =>
     set((state) => ({
-      goals: [...state.goals, { id, name, completed: false, steps: steps ?? [] }],
+      goals: [
+        ...state.goals,
+        { id, name, completed: false, steps: steps ?? [] },
+      ],
     })),
 
   removeGoal: (id) =>

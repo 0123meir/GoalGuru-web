@@ -1,3 +1,5 @@
+import AppLogo from "@/assets/AppLogo";
+import SplashIcon from "@/assets/SplashIcon";
 import axios from "axios";
 
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
@@ -5,23 +7,23 @@ import { GoogleCredentialResponse } from "@react-oauth/google";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { useUserStore } from "@/store/useUserStore";
+
 import useAuthTokens from "@/hooks/useAuthTokens";
 import useLocalStorage from "@/hooks/useLocalStorage";
 
 import { APIError } from "@/types/api";
-import SplashIcon from "@/assets/SplashIcon";
-import AppLogo from "@/assets/AppLogo";
-import { width } from "@fortawesome/free-solid-svg-icons/fa0";
 
 export const LoginPage = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [username, setUsername] = useState<string>("");
+  const [name, setName] = useState<string>("");
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [error, setError] = useState<string | undefined>(undefined);
   const { setItem } = useLocalStorage("userId");
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const serverId = import.meta.env.VITE_SERVER_URL;
+  const { setUsername, setGoogleAuth } = useUserStore();
 
   const navigate = useNavigate();
   const { setTokens } = useAuthTokens();
@@ -34,14 +36,15 @@ export const LoginPage = () => {
       ? `${serverId}/auth/login`
       : `${serverId}/auth/register`;
 
-    const payload = isLogin
-      ? { email, password }
-      : { username, email, password };
+    const payload = isLogin ? { email, password } : { name, email, password };
 
     try {
       const response = await axios.post(endpoint, payload);
       setTokens(response.data.accessToken, response.data.refreshToken);
       setItem(response.data.id);
+      setUsername(response.data.username);
+      setGoogleAuth(false);
+
       navigate("/home");
     } catch (err) {
       const error = err as APIError;
@@ -58,7 +61,8 @@ export const LoginPage = () => {
       });
 
       setTokens(response.data.accessToken, response.data.refreshToken);
-      console.log(response.data); //TODO: get user Id
+      setUsername(response.data.username);
+      setGoogleAuth(true);
 
       navigate("/home");
     } catch (err) {
@@ -74,11 +78,11 @@ export const LoginPage = () => {
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <div className="flex items-center justify-evenly min-h-screen flex-row-reverse bg-blue-50">
-
         <div className="flex flex-col items-center">
-          <SplashIcon style={{height: '50rem', width: '50rem'}}/></div>
+          <SplashIcon style={{ height: "50rem", width: "50rem" }} />
+        </div>
         <div className="w-full max-w-xl p-6 bg-blue-100 rounded-lg shadow-md">
-          <AppLogo style={{}}/>
+          <AppLogo style={{}} />
           <h2 className="text-2xl font-bold text-center mb-4">
             {isLogin ? "Login" : "Register"}
           </h2>
@@ -87,9 +91,9 @@ export const LoginPage = () => {
             {!isLogin && (
               <input
                 type="text"
-                placeholder="Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                placeholder="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="w-full p-2 border rounded"
               />
             )}
@@ -108,23 +112,22 @@ export const LoginPage = () => {
               className="w-full p-2 pl-4 border rounded-full"
             />
             <div className="flex items-center gap-2">
-
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white p-2 rounded-full"
+              <button
+                type="submit"
+                className="w-full bg-blue-500 text-white p-2 rounded-full"
               >
-              {isLogin ? "Login" : "Register"}
-            </button>
+                {isLogin ? "Login" : "Register"}
+              </button>
 
-          <div className="text-center rounded-full" dir="rtl">
-            <GoogleLogin
-            shape="circle"
-            onSuccess={handleGoogleSuccess}
-            onError={handleGoogleFailure}
-            />
-          </div>
+              <div className="text-center rounded-full" dir="rtl">
+                <GoogleLogin
+                  shape="circle"
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleFailure}
+                />
+              </div>
             </div>
-            </form>
+          </form>
 
           <p className="text-center mt-4">
             {isLogin ? "Don't have an account?" : "Already have an account?"}
