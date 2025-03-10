@@ -9,6 +9,7 @@ import {
   updateGoalById,
   deleteGoalById,
 } from "../DAL/goals";
+import { updateStepsByGoalId } from "../DAL/steps";
 
 const router = express.Router();
 
@@ -116,31 +117,41 @@ router.put(
         res.status(400).json({ error: "Invalid goal ID" });
         return;
       }
+
       const { name, completed } = req.body;
-      if (!name || completed == undefined) {
-        res.status(400).json("required body not provided");
+      if (!name && completed == undefined) {
+        res.status(400).json("Required body not provided");
         return;
       }
-      if (typeof name !== "string" || typeof completed !== "boolean") {
-        res.status(400).json("wrong type body parameters");
+      if (name && typeof name !== "string") {
+        res.status(400).json("Wrong type for name parameter");
+        return;
+      }
+      if (completed !== undefined && typeof completed !== "boolean") {
+        res.status(400).json("Wrong type for completed parameter");
         return;
       }
 
       const updatedGoal = await updateGoalById(goalId, name, completed);
+      
       if (!updatedGoal) {
-        res.status(404).json({
-          error: "Goal not found",
-        });
+        res.status(404).json({ error: "Goal not found" });
         return;
       }
+
+      if (completed !== undefined) {
+        updateStepsByGoalId(goalId,completed);
+      }
+
       res.json(updatedGoal);
       return;
     } catch (err) {
       res.status(500).json({ error: err.name });
       return;
     }
-  },
+  }
 );
+
 
 router.delete(
   "/:id",

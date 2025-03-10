@@ -20,7 +20,7 @@ type GoalItemProps = {
 
 const GoalItem: React.FC<GoalItemProps> = ({ goal }) => {
   const [expanded, setExpanded] = useState(false);
-  const { deleteGoal, updateGoal } = useGoalApi();
+  const { deleteGoal, toggleAllSteps } = useGoalApi();
 
   return (
     <div className="mb-4 p-4 border rounded-xl shadow-sm bg-gray-50">
@@ -32,7 +32,7 @@ const GoalItem: React.FC<GoalItemProps> = ({ goal }) => {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              updateGoal(goal.id, { ...goal, completed: !goal.completed });
+              toggleAllSteps(goal.id, !goal.completed);
             }}
           >
             {goal.completed ? (

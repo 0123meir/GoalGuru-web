@@ -76,5 +76,29 @@ export const useGoalApi = () => {
     [api, removeGoal]
   );
 
-  return { getAllGoals, addGoal, updateGoal, deleteGoal };
+  const toggleAllSteps = async (goalId: string, completed: boolean) => {
+    try {
+      await api.put(`/goals/${goalId}`, { completed });
+
+      const newGoals = goals.map((goal: Goal) =>
+        goal.id === goalId
+          ? ({
+              ...goal,
+              completed: completed,
+              steps: goal.steps.map((step) => ({
+                ...step,
+                completed,
+              })),
+            } as Goal)
+          : goal
+      );
+
+      setGoals(newGoals);
+      
+    } catch (error) {
+      console.error("Failed to toggle steps", error);
+    }
+  };
+
+  return { getAllGoals, addGoal, updateGoal, deleteGoal, toggleAllSteps };
 };

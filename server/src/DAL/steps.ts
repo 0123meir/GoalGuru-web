@@ -39,9 +39,20 @@ const getStepsByGoalId = async (goalId: string) => {
   try {
     return await Step.find({ goal: goalId });
   } catch (err) {
-    console.error("Error retrieving steps by postId: ", err);
+    console.error("Error retrieving steps by goalId: ", err);
   }
 };
+
+
+const updateStepsByGoalId = async (goalId: string, completed: boolean) => {
+  try 
+  {
+    await Step.updateMany({ goal: goalId }, { completed });
+  } catch (err) 
+  {
+    console.error("Error updating steps by goalId: ", err)
+  }
+}
 
 export {
   saveStep,
@@ -49,4 +60,5 @@ export {
   updateStepById,
   deleteStepById,
   getStepsByGoalId,
+  updateStepsByGoalId
 };
