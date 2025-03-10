@@ -7,14 +7,14 @@ type GoalStepProps = {
   goalId: string;
 };
 
-const GoalStep: React.FC<GoalStepProps> = ({ step }) => {
+const GoalStep: React.FC<GoalStepProps> = ({ step, goalId }) => {
   const { deleteStep, updateStep } = useStepApi();
 
   return (
     <div className="flex items-center justify-between bg-white px-3 py-2 rounded-full border">
       <button
         onClick={() =>
-          updateStep(step.id, { ...step, completed: !step.completed })
+          updateStep(step.id, goalId, { ...step, completed: !step.completed })
         }
         className="text-blue-500 mr-2"
       >

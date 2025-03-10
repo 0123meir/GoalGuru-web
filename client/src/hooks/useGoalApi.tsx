@@ -48,13 +48,13 @@ export const useGoalApi = () => {
   const updateGoal = useCallback(
     async (id: string, updates: Goal) => {
       try {
-        const updatedGoal = await api.put(`/goals/${id}`, {
+        await api.put(`/goals/${id}`, {
           completed: updates.completed,
           name: updates.name,
         });
         setGoals(
           goals.map((goal) =>
-            goal.id === id ? (updatedGoal.data as Goal) : goal
+            goal.id === id ? (updates as Goal) : goal
           )
         );
       } catch (error) {

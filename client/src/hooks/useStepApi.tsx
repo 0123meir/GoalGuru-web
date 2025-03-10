@@ -24,20 +24,20 @@ export const useStepApi = () => {
     }
   };
 
-  const updateStep = async (id: string, updates: Step) => {
+  const updateStep = async (id: string, goalId: string, updates: Step) => {
     try {
-      const response = await api.put(`/steps/${id}`, {
+      await api.put(`/steps/${id}`, {
         description: updates.description,
         completed: updates.completed,
       });
 
       const newGoals = goals.map((goal: Goal) =>
-        goal.id === response.data.goal._id
+        goal.id === goalId
           ? ({
               ...goal,
               steps: goal.steps.map((step) =>
-                step.id === response.data._id
-                  ? { ...response.data, id: response.data._id }
+                step.id === updates.id
+                  ? { ...updates, id: updates.id }
                   : step
               ),
             } as Goal)
@@ -51,7 +51,6 @@ export const useStepApi = () => {
 
   const deleteStep = async (id: string) => {
     try {
-      await api.delete(`/steps/${id}`);
       setGoals(
         goals.map(
           (goal: Goal) =>
@@ -61,6 +60,7 @@ export const useStepApi = () => {
             } as Goal)
         )
       );
+      await api.delete(`/steps/${id}`);
     } catch (error) {
       console.error("Failed to delete step", error);
     }
