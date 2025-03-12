@@ -1,0 +1,146 @@
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzY1NzUzMTc2MjA3ZjU3YzIxNGI2MDciLCJpYXQiOjE3MzQ3MDI1MDksImV4cCI6MTczNDcwMjUxMH0.hXC2k-EiLr-eqO8ndWTkcFC_j99JRI44MEf6LuMm-3E 
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzY1NzUzMTc2MjA3ZjU3YzIxNGI2MDciLCJpYXQiOjE3MzQ3MDIzOTZ9.H4OYaRf58iR2m8DoTOiAZrA_CAEJ5Zr_j4Tb0q2nUd0
+@senderId = 6765753176207f57c214b607
+@postId = 6738798c88f086de23f3209d
+@commentId = 6748901949152b8687e00985
+@userId = 6765753176207f57c214b607
+
+### posts API
+
+POST http://localhost:3000/posts
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "senderId": "{{senderId}}",
+    "message": "this is a test message"
+}
+###
+
+GET http://localhost:3000/posts
+Authorization: Bearer {{token}}
+
+###
+
+GET http://localhost:3000/posts/{{postId}}
+Authorization: Bearer {{token}}
+
+###
+
+GET http://localhost:3000/posts/sender?id={{senderId}}
+Authorization: Bearer {{token}}
+
+###
+
+PUT http://localhost:3000/posts/{{postId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "message": "message to updateA"
+}
+
+### messages API
+
+POST http://localhost:3000/comments
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "senderId": "{{senderId}}",
+    "content": "This is a comment.",
+    "postId": "{{postId}}"
+}
+
+###
+
+GET http://localhost:3000/comments
+Authorization: Bearer {{token}}
+
+###
+
+GET http://localhost:3000/comments/{{commentId}}
+Authorization: Bearer {{token}}
+
+###
+
+GET http://localhost:3000/comments/post/{{postId}}
+Authorization: Bearer {{token}}
+
+###
+
+PUT http://localhost:3000/comments/{{commentId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": "Updated comment content"
+}
+
+###
+
+DELETE http://localhost:3000/comments/{{commentId}}
+Authorization: Bearer {{token}}
+
+### Users API
+
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+    "username": "meiar",
+    "email": "user@awsomeDomaain1.com",
+    "password": "passToEncrypt"
+}
+###
+
+GET http://localhost:3000/users
+Authorization: Bearer {{token}}
+
+###
+
+GET http://localhost:3000/users/{{userId}}
+Authorization: Bearer {{token}}
+
+###
+PUT http://localhost:3000/users/{{userId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "username": "meirA",
+    "email" : "user@myDaifferentAwsomeDomain.coma"
+}
+
+###
+DELETE http://localhost:3000/users/{{userId}}
+Authorization: Bearer {{token}}
+
+### auth API
+
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+    "username": "newuser",
+    "email": "newuser@example.com",
+    "password": "securepassword"
+}
+###
+
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "email": "newuser@example.com",
+    "password": "securepassword"
+}
+###
+
+POST http://localhost:3000/auth/logout
+Authorization: Bearer {{refreshToken}}
+
+###
+
+POST http://localhost:3000/auth/refreshToken
+Authorization: Bearer {{refreshToken}}

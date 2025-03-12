@@ -1,0 +1,9 @@
+{
+    "importOrder": [
+      "^@hooks/(.*)$",
+      "^@components/(.*)$",
+      "^[./]"
+    ],
+    "importOrderSeparation": true, 
+    "importOrderSortSpecifiers": true 
+}

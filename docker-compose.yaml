@@ -1,0 +1,30 @@
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    env_file:
+      - .env
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+  server:
+    image: goal-guru-server:latest
+    container_name: server
+    build: ./server
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./server/.env
+    depends_on:
+      - mongodb
+  client:
+    build: ./client
+    env_file:
+      - ./client/.env
+    image: goal-guru-client:latest
+    ports:
+      - "5173:80"
+    depends_on:
+      - server
