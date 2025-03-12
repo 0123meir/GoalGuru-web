@@ -1,9 +1,7 @@
-import React from "react";
 
-const AppLogo = ({ style }) => {
+const AppLogo = () => {
   return (
     <svg
-      style={style}
       width="197"
       height="41"
       viewBox="0 0 197 41"

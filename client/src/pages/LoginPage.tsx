@@ -79,10 +79,10 @@ export const LoginPage = () => {
     <GoogleOAuthProvider clientId={clientId}>
       <div className="flex items-center justify-evenly min-h-screen flex-row-reverse bg-blue-50">
         <div className="flex flex-col items-center">
-          <SplashIcon style={{ height: "50rem", width: "50rem" }} />
+          <SplashIcon />
         </div>
         <div className="w-full max-w-xl p-6 bg-blue-100 rounded-lg shadow-md">
-          <AppLogo style={{}} />
+          <AppLogo />
           <h2 className="text-2xl font-bold text-center mb-4">
             {isLogin ? "Login" : "Register"}
           </h2>
