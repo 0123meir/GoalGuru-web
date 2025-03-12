@@ -1,7 +1,7 @@
-const SplashIcon = ({ style }) => {
+const SplashIcon = () => {
   return (
     <svg
-      style={style}
+      style={{ height: "50rem", width: "50rem" }}
       width="256"
       height="254"
       viewBox="0 0 256 254"
