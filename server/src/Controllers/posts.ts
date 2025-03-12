@@ -36,7 +36,7 @@ const upload = multer({
   },
 });
 
-const serverUrl = process.env.SERVER_URL || "http://localhost:3000";
+const serverUrl = process.env.SERVER_URL || "https://localhost:5000";
 
 router.post(
   "/",
