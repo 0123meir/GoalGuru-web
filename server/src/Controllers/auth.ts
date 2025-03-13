@@ -55,15 +55,15 @@ router.post(
   upload.single("profileImage"),
   async (req: Request, res: Response): Promise<void> => {
     try {
-      const { username, email, password } = req.body;
+      const { name, email, password } = req.body;
       const profileImage = req.file ? req.file.path : undefined;
-
-      if (!username || !email || !password) {
+      
+      if (!name || !email || !password) { 
         res.status(400).json({ error: "Missing required fields" });
         return;
       }
 
-      const user = await createUser(username, email, password, profileImage);
+      const user = await createUser(name, email, password, profileImage);
 
       res.status(201).json(extractUserProps(user));
       return;
