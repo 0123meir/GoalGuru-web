@@ -1,7 +1,7 @@
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2NhNDZkN2RkM2EwNjU0NzEzYzdjMDgiLCJpYXQiOjE3NDEzMDk4MDksImV4cCI6MTc0MTM5NjIwOX0.IW4Be0PNUcaxESM4Hp0lFgsALgEjWMLDSIz1k0qSDkg
-@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2MwNzJkZGM1YzU3ZjgxZDYwYWZlMjYiLCJpYXQiOjE3NDEzMDM0MDh9.dVOFbI8bJr9__Gb8d9aZTVwGSM3XL6y7HBVSxGUF_Rc
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2M5YjE3YzdmYzI2NjQ2N2RhOTdhMDgiLCJpYXQiOjE3NDE0NTA5NTAsImV4cCI6MTc0MTUzNzM1MH0.-N1MHj-Hlf5Db91padXaxx7WEASY8mViRv12A6TDHso
+@refreshToken =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2M5YjE3YzdmYzI2NjQ2N2RhOTdhMDgiLCJpYXQiOjE3NDE0NTA5NTB9.JO77pR-ae_pzFtV-eePuG9hSMOxxonRlG7kHtioA-GY
 @posterId = 67ca46d7dd3a0654713c7c08
-@postId = 67c345030517efec8c22b4bf
+@postId = 67cc7577d81184ac827816eb
 @commentId = 6748901949152b8687e00985
 @userId = 67ca46d7dd3a0654713c7c08
 
@@ -132,7 +132,7 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-    "email": "testUser@example.com",
+    "email": "0123meir111@gmail.com",
     "password": "1234"
 }
 ###

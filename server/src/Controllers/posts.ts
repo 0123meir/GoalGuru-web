@@ -37,6 +37,10 @@ const upload = multer({
 });
 
 const serverUrl = process.env.SERVER_URL || "http://localhost:3000";
+const formatProfileImage = (profileImage: string) =>
+  `${serverUrl}/profile_images/${path.basename(profileImage)}`
+const formatPostImage = (image: string) =>
+  `${serverUrl}/images/${path.basename(image)}`;
 
 router.post(
   "/",
@@ -83,7 +87,8 @@ router.post(
         message: "Post saved successfully",
         post: {
           ...addedPost,
-          poster: { username: user.username },
+          poster: { username: user.username, profileImage: formatProfileImage(user.profileImage) },
+          imageUrls: imageUrls.map(url => formatPostImage(url)) ?? null,
           likesCount: 0,
           comments: [],
         },
@@ -99,6 +104,7 @@ router.post(
   }
 );
 
+
 router.get(
   "/",
   authenticate,
@@ -106,11 +112,11 @@ router.get(
     try {
       const posts = await getRecentPosts(req.user.id);
       for (const post of posts) {
-        post.imageUrls = post.imageUrls.map((url) => {
-          return `${serverUrl}/images/${path.basename(url)}`;
-        });
+        post.imageUrls = post.imageUrls.map(formatPostImage);
         if (post.poster.profileImage) {
-          post.poster.profileImage = `${serverUrl}/profile_images/${path.basename(post.poster.profileImage)}`;
+          post.poster.profileImage = formatProfileImage(
+            post.poster.profileImage
+          );
         }
       }
 

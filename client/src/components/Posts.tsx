@@ -1,3 +1,4 @@
+import EmptyPostsIcon from "@/assets/EmptyPosts";
 import { formatDistanceToNow } from "date-fns";
 
 import { Carousel } from "react-responsive-carousel";
@@ -19,30 +20,37 @@ export const Posts = ({
   togglePostLike,
   onCommentSubmit,
 }: PostsProps) => {
-  const getUserPhoto = (post: Post): string | undefined =>
-    post.poster?.profileImage ?? defaultUserImage;
   const formatPublishTime = (publishTime: Date): string => {
     return formatDistanceToNow(publishTime);
   };
 
   if (posts.length === 0)
     return (
-      <div className="flex flex-col items-center bg-gray-100 p-4">
-        No way! seems like you don't have any posts yet, why not create one?
+      <div className="flex flex-col items-center bg-gray-100 pt-10">
+        <EmptyPostsIcon />
+        <p className="mt-10 text-lg">
+          No way! seems like you don't have any posts yet, why not create one?
+        </p>
       </div>
     );
 
+  const getProfilePhoto = (post: Post) => {
+    return !post.poster.profileImage || post.poster.profileImage === ""
+      ? defaultUserImage
+      : post.poster.profileImage;
+  };
+
   return (
-    <div className="flex flex-col items-center bg-gray-100 p-4">
+    <div className="flex flex-col items-center bg-gray-100 p-4 w-full max-w-4xl mx-auto h-full overflow-y-auto">
       {posts?.map((post) => (
         <div
           key={post._id}
-          className="w-3/4 bg-white rounded-lg shadow-md p-4 mb-4 "
+          className="w-full bg-white rounded-lg shadow-md p-4 mb-4"
         >
           <div className="flex items-center mb-4">
             <img
-              src={getUserPhoto(post)}
-              alt="User"
+              src={getProfilePhoto(post)}
+              alt={"User"}
               className="w-12 h-12 rounded-full mr-4"
             />
             <div>
@@ -53,7 +61,6 @@ export const Posts = ({
             </div>
           </div>
           <div className="mb-4">{post.description}</div>
-          <hr className="my-2" />
           {post.imageUrls && (
             <div className="w-full flex justify-center mb-4">
               <div className="w-1/2">
@@ -65,7 +72,7 @@ export const Posts = ({
                     >
                       <img
                         src={image}
-                        alt="Post"
+                        alt={"Post"}
                         className="object-contain h-64 w-full rounded-lg"
                       />
                     </div>
@@ -78,8 +85,8 @@ export const Posts = ({
             <svg
               className={
                 post.isLikedByUser
-                  ? "w-6 h-6 text-red-500 mr-2"
-                  : "w-6 h-6 text-gray-700 mr-2"
+                  ? "w-6 h-6 text-red-500 mr-2 cursor-pointer"
+                  : "w-6 h-6 text-gray-700 mr-2 cursor-pointer"
               }
               onClick={() => {
                 togglePostLike(post._id);
@@ -94,7 +101,7 @@ export const Posts = ({
                 clipRule="evenodd"
               />
             </svg>
-            Likes: {post.likesCount}
+            {post.likesCount}
           </div>
           <hr className="my-2" />
           <div className="flex flex-col">
