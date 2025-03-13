@@ -1,7 +1,10 @@
 {
     "importOrder": [
-      "^@hooks/(.*)$",
-      "^@components/(.*)$",
+      "react",
+      "^@/store/(.*)$",
+      "^@/hooks/(.*)$",
+      "^@/components/(.*)$",
+      "^@/types/(.*)$",
       "^[./]"
     ],
     "importOrderSeparation": true, 

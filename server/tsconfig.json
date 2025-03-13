@@ -2,7 +2,12 @@
     "compilerOptions": {
       "outDir": "./dist",
       "allowJs": true,
-      "target": "es5"
+      "target": "esnext",
+      "resolveJsonModule": true,
+      "esModuleInterop": true,
+      "moduleResolution": "node",
+      "module": "commonjs",
+      "allowSyntheticDefaultImports": true,
     },
-    "include": ["./src/**/*"]
+    "include": ["./src/**/*", "./images_storage/**/*"],
   }
