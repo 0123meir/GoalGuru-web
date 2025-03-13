@@ -1,7 +1,9 @@
-import { Post } from "@/types/forum";
 import { formatDistanceToNow } from "date-fns";
+
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
+
+import { Post } from "@/types/forum";
 
 import defaultUserImage from "../assets/default-user.png";
 import CommentInput from "./CommentInput";

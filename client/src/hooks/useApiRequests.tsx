@@ -1,4 +1,5 @@
 import axios from "axios";
+
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -27,7 +28,7 @@ function useApiRequests() {
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (error.response?.status === 403 && !originalRequest._retry) {
           originalRequest._retry = true;
           const { refreshToken } = getTokens();
           if (!refreshToken) {

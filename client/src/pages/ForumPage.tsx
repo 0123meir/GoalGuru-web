@@ -1,8 +1,11 @@
-import LoadingScreen from "@/components/LoadingScreen";
+import { useEffect, useState } from "react";
+
 import useApiRequests from "@/hooks/useApiRequests";
 import useLocalStorage from "@/hooks/useLocalStorage";
+
+import LoadingScreen from "@/components/LoadingScreen";
+
 import { Post } from "@/types/forum";
-import { useEffect, useState } from "react";
 
 import NewPostForm from "../components/NewPostForm";
 import { Posts } from "../components/Posts";

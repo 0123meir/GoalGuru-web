@@ -126,7 +126,7 @@ describe("Testing User Routes", () => {
         });
 
       expect(res.statusCode).toBe(400);
-      expect(res.body).toHaveProperty("error", "user Not Found");
+      expect(res.body).toHaveProperty("error", "User not found");
     });
   });
 
