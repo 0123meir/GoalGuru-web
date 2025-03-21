@@ -1,4 +1,4 @@
-import Like from "../db/likesSchema";
+import Like from "../db/likeSchema";
 
 export async function addLike(userId: string, postId: string) {
   try {
@@ -6,7 +6,7 @@ export async function addLike(userId: string, postId: string) {
       userId,
       postId,
     });
-    
+
     return await newLike.save();
   } catch (err) {
     console.error("Post saving error: ", err);
