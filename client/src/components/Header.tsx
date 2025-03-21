@@ -94,7 +94,7 @@ const Header = ({ rightIcon }: HeaderProps) => {
             <img
               src={getProfilePhoto(image)}
               alt={"User"}
-              className="w-12 h-12 rounded-full"
+              className="w-12 h-12 rounded-full ml-2"
             />
             <div className="mx-4 content-center text-white">{`Hello ${username}!`}</div>
             </>

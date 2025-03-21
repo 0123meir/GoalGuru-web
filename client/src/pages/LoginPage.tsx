@@ -95,7 +95,7 @@ export const LoginPage = () => {
                 placeholder="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 pl-4 border rounded-full outline-none"
               />
             )}
             <input
@@ -103,14 +103,14 @@ export const LoginPage = () => {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 pl-4 border rounded-full"
+              className="w-full p-2 pl-4 border rounded-full outline-none"
             />
             <input
               type="password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2 pl-4 border rounded-full"
+              className="w-full p-2 pl-4 border rounded-full outline-none"
             />
             <div className="flex items-center gap-2">
               <button

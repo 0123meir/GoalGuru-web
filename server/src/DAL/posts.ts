@@ -9,12 +9,13 @@ const savePost = async (post) => {
   }
 };
 
-const getRecentPosts = async (userId: string) => {
+const getRecentPosts = async (userId: string, skip: number, limit: number) => {
   try {
     return await Post.aggregate([
       // 1. Sort by publishTime (newest first) and limit to 10 posts
       { $sort: { publishTime: -1 } },
-      { $limit: 10 },
+      { $skip: skip },
+      { $limit: limit },
 
       // 2. Lookup the poster's user info to get the username
       {

@@ -104,23 +104,35 @@ router.get(
   authenticate,
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const posts = await getRecentPosts(req.user.id);
+      // Pagination parameters
+      const page = parseInt(req.query.page as string) || 1; // Default to page 1
+      const limit = parseInt(req.query.limit as string) || 10; // Default to 10 posts per page
+      const skip = (page - 1) * limit;
+
+      // Get the paginated posts
+      const posts = await getRecentPosts(req.user.id, skip, limit);
+
+      // Map and format the posts
       for (const post of posts) {
         post.imageUrls = post.imageUrls.map(formatPostImage);
         if (post.poster.profileImage) {
-          post.poster.profileImage = formatProfileImage(
-            post.poster.profileImage
-          );
+          post.poster.profileImage = formatProfileImage(post.poster.profileImage);
         }
       }
 
-      res.status(200).json(posts);
+      const hasMore = posts.length === limit;
+
+      // Send paginated posts as response
+      res.status(200).json({
+        page,
+        limit,
+        posts,
+        hasMore
+      });
       return;
     } catch (err) {
       console.error("Error fetching recent posts:", err);
-      res
-        .status(500)
-        .json({ error: "Failed to fetch recent posts", details: err.message });
+      res.status(500).json({ error: "Failed to fetch recent posts", details: err.message });
       return;
     }
   }

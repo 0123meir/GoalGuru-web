@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import useApiRequests from "@/hooks/useApiRequests";
 import useLocalStorage from "@/hooks/useLocalStorage";
@@ -10,30 +10,38 @@ import { Post } from "@/types/forum";
 
 import NewPostForm from "../components/NewPostForm";
 import { Posts } from "../components/Posts";
+import {MdAdd as AddIcon} from 'react-icons/md'
 
 export const ForumPage = () => {
   type Tab = "myPosts" | "Explore";
   const [activeTab, setActiveTab] = useState<Tab>("myPosts");
-  const [posts, setPosts] = useState<Post[] | undefined>(undefined);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [page, setPage] = useState<number>(1)
+  const [showPageCounter, setShowPageCounter] = useState<boolean>(true)
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { getItem } = useLocalStorage("userId");
   const userId = getItem();
   const api = useApiRequests();
 
+  const PAGINATION_LIMIT = 10;
+
+  const fetchPosts = useCallback(async () => {
+    try {
+      const postsRes = await api.get(`/posts/?page=${page}&limit=${PAGINATION_LIMIT}`);
+      setPosts(prev => [...prev,...postsRes.data.posts]);
+      setShowPageCounter(postsRes.data.hasMore)
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+    }
+  },[page]);
+
+
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const postsRes = await api.get("/posts/");
-        setPosts(postsRes.data);
-        setLoading(false);
-      } catch (err) {
-        console.error(err);
-        setLoading(false);
-      }
-    };
     fetchPosts();
-  }, []);
+  }, [fetchPosts]);
   
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
@@ -98,7 +106,7 @@ export const ForumPage = () => {
         ...response.data.post,
         publishDate: new Date(response.data.post.publishDate),
       };
-      setPosts((prevPosts) => [newPost, ...(prevPosts || [])]);
+      setPosts((prevPosts) => [newPost, ...(prevPosts)]);
     } catch (error) {
       console.error("Error submitting new post:", error);
     }
@@ -173,20 +181,26 @@ export const ForumPage = () => {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto justify-items-center">
           {activeTab === "myPosts" && (
+            <>
             <Posts
               posts={getOwnPosts()}
               togglePostLike={togglePostLike}
               onCommentSubmit={handleCommentSubmit}
-            />
+              />
+               {showPageCounter && <button className="hover:bg-slate-300 rounded-full mb-3 text-3xl" onClick={()=>setPage(prev => prev + 1)}><AddIcon/></button>}
+              </>
           )}
           {activeTab === "Explore" && (
+            <>
             <Posts
               posts={getFriendsPosts()}
               togglePostLike={togglePostLike}
               onCommentSubmit={handleCommentSubmit}
-            />
+              />
+              {showPageCounter && <button className="hover:bg-slate-300 rounded-full mb-3 text-3xl" onClick={()=>setPage(prev => prev + 1)}><AddIcon/></button>}
+              </>
           )}
         </div>
       </div>
