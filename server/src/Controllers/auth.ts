@@ -10,12 +10,14 @@ import { AuthenticatedRequest } from "../Middlewares/authMiddleware";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { formatProfileImage } from "../config/config";
 
 interface UserProps {
   _id: string;
   username: string;
   email: string;
   tokens: string[];
+  profileImage: string
 }
 
 interface JwtPayload {
@@ -45,6 +47,7 @@ const extractUserProps = (user: any): UserProps => ({
   username: user.username,
   email: user.email,
   tokens: user.tokens,
+  profileImage: user.profileImage
 });
 
 const sendError = (res: Response, errorMessage = "") =>
@@ -121,6 +124,7 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
       email: user.email,
       accessToken,
       refreshToken,
+      profileImage: formatProfileImage(user.profileImage || 'default-user.png') 
     });
     return;
   } catch (err: any) {

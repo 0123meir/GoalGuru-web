@@ -16,7 +16,7 @@ import {
 } from "../DAL/posts";
 import Post from "../db/postSchema";
 import { getUserById } from "../DAL/users";
-import { postImagesDirectory, profileImagesDirectory } from "../config/config";
+import { formatPostImage, formatProfileImage, postImagesDirectory, profileImagesDirectory } from "../config/config";
 
 const router = express.Router();
 
@@ -35,12 +35,6 @@ const upload = multer({
     callback(new Error("Only .png, .jpg and .jpeg format allowed!"));
   },
 });
-
-const serverUrl = process.env.SERVER_URL || "https://localhost:5000";
-const formatProfileImage = (profileImage: string) =>
-  `${serverUrl}/profile_images/${path.basename(profileImage)}`
-const formatPostImage = (image: string) =>
-  `${serverUrl}/images/${path.basename(image)}`;
 
 router.post(
   "/",

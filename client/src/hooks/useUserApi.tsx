@@ -3,22 +3,28 @@ import { useUserStore } from "@/store/useUserStore";
 import useApiRequest from "@/hooks/useApiRequests";
 
 export const useUserApi = () => {
-  const { setUsername } = useUserStore();
+  const { setUsername, setProfilePhoto } = useUserStore();
   const api = useApiRequest();
 
-  const updateUsername = async (id: string, username: string) => {
+  const updateUser = async (id: string, username: string, file: File | undefined = undefined) => {
     try {
-      const response = await api.put(`/users/${id}`, {
-        username: username,
+      const formData = new FormData();
+      formData.append("username", username)
+      if (file) {
+        formData.append("profileImage", file);
+      }
+      
+      const response = await api.put(`/users/${id}`,formData
+      ,{
+        headers: {"Content-Type": "multipart/form-data"}
       });
 
-      console.log(response.data);
-
       setUsername(response.data.username);
+      setProfilePhoto(response.data.profileImage)
     } catch (error) {
       console.error("Failed to update step", error);
     }
   };
 
-  return { updateUsername };
+  return { updateUser };
 };
