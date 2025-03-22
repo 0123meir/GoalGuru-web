@@ -3,8 +3,6 @@ import { formatDistanceToNow } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisV, faHeart as solidHeart } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as regularHeart, faComment } from "@fortawesome/free-regular-svg-icons";
-import { Carousel } from "react-responsive-carousel";
-import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Post } from "@/types/forum";
 import defaultUserImage from "@/assets/default-user.png";
 import CommentInput from "./CommentInput";
@@ -29,6 +27,7 @@ const PostItem = ({
 }: PostItemProps) => {
   const [showComments, setShowComments] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   const formatPublishTime = (publishTime: Date): string => {
     return formatDistanceToNow(new Date(publishTime), { addSuffix: true });
@@ -91,27 +90,31 @@ const PostItem = ({
         <p className="text-gray-800">{post.description}</p>
       </div>
       
-      {/* Images */}
+      {/* Images Grid */}
       {post.imageUrls && post.imageUrls.length > 0 && (
-        <div className="mt-2">
-          <Carousel 
-            showThumbs={false} 
-            showStatus={false} 
-            infiniteLoop 
-            useKeyboardArrows
-            showIndicators={post.imageUrls.length > 1}
-            className="post-carousel"
+        <div className="grid grid-cols-2 gap-2 p-4">
+          {post.imageUrls.map((image, index) => (
+            <img 
+              key={index} 
+              src={image} 
+              alt={`Post image ${index + 1}`} 
+              className="object-cover w-full h-40 rounded-md cursor-pointer hover:opacity-75 transition-opacity"
+              onClick={() => setLightboxImage(image)}
+            />
+          ))}
+        </div>
+      )}
+      
+      {/* Lightbox */}
+      {lightboxImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50" onClick={() => setLightboxImage(null)}>
+          <img src={lightboxImage} alt="Lightbox" className="max-w-full max-h-full rounded-lg" onClick={(e) => e.stopPropagation()}/>
+          <button 
+            onClick={() => setLightboxImage(null)} 
+            className="absolute top-4 right-4 text-white text-2xl"
           >
-            {post.imageUrls.map((image, index) => (
-              <div key={index} className="carousel-slide">
-                <img
-                  src={image}
-                  alt={`Post image ${index + 1}`}
-                  className="object-contain max-h-80 w-full"
-                />
-              </div>
-            ))}
-          </Carousel>
+            ✕
+          </button>
         </div>
       )}
       
@@ -153,7 +156,6 @@ const PostItem = ({
           ) : (
             <p className="text-gray-500 text-sm mb-3">No comments yet</p>
           )}
-          
           <CommentInput onSubmit={(content) => onCommentSubmit(post._id, content)} />
         </div>
       )}
