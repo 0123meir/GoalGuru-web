@@ -7,10 +7,10 @@
   "components": {
     "securitySchemes": {
       "bearerAuth": {
-      "type": "http",
-      "scheme": "bearer",
-      "bearerFormat": "JWT"
-    }
+        "type": "https",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
     },
     "schemas": {
       "User": {
@@ -26,36 +26,109 @@
           },
           "password": {
             "type": "string"
+          },
+          "tokens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "profileImage": {
+            "type": "string"
           }
         }
       },
       "Post": {
         "type": "object",
-        "required": ["message", "senderId"],
+        "required": ["description", "posterId"],
         "properties": {
-          "message": {
+          "description": {
             "type": "string"
           },
-          "senderId": {
+          "posterId": {
             "type": "string",
-            "format": "string"
+            "format": "objectId"
+          },
+          "publishTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "imageUrls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
       "Comment": {
         "type": "object",
-        "required": ["content", "senderId", "postId"],
+        "required": ["content", "commentorId", "postId"],
         "properties": {
           "content": {
             "type": "string"
           },
-          "senderId": {
+          "commentorId": {
             "type": "string",
-            "format": "string"
+            "format": "objectId"
           },
           "postId": {
             "type": "string",
-            "format": "string"
+            "format": "objectId"
+          }
+        }
+      },
+      "Like": {
+        "type": "object",
+        "required": ["userId", "postId"],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "objectId"
+          },
+          "postId": {
+            "type": "string",
+            "format": "objectId"
+          }
+        }
+      },
+      "Goal": {
+        "type": "object",
+        "required": ["name", "creatorId"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean",
+            "default": false
+          },
+          "creatorId": {
+            "type": "string",
+            "format": "objectId"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Step"
+            }
+          }
+        }
+      },
+      "Step": {
+        "type": "object",
+        "required": ["description", "goal"],
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "completed": {
+            "type": "boolean",
+            "default": false
+          },
+          "goal": {
+            "type": "string",
+            "format": "objectId"
           }
         }
       }
@@ -66,17 +139,21 @@
       "get": {
         "summary": "Get a list of all users",
         "tags": ["Users"],
-        "security": [{
-          "bearerAuth": []
-        }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of users retrieved successfully",
             "content": {
               "application/json": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/User"
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
                 }
               }
             }
@@ -88,16 +165,20 @@
       "get": {
         "summary": "Get a specific user by ID",
         "tags": ["Users"],
-        "security": [{
-          "bearerAuth": []
-        }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "userId",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uuid"
+            "schema": {
+              "type": "string",
+              "format": "objectId"
+            }
           }
         ],
         "responses": {
@@ -119,16 +200,20 @@
       "put": {
         "summary": "Update a specific user",
         "tags": ["Users"],
-        "security": [{
-          "bearerAuth": []
-        }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "userId",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uuid"
+            "schema": {
+              "type": "string",
+              "format": "objectId"
+            }
           }
         ],
         "requestBody": {
@@ -163,16 +248,20 @@
       "delete": {
         "summary": "Delete a specific user by id",
         "tags": ["Users"],
-        "security": [{
-          "bearerAuth": []
-        }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "userId",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uuid"
+            "schema": {
+              "type": "string",
+              "format": "objectId"
+            }
           }
         ],
         "responses": {
@@ -189,9 +278,11 @@
       "post": {
         "summary": "Create a new post",
         "tags": ["Posts"],
-        "security": [{
-          "bearerAuth": []
-        }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -230,17 +321,21 @@
       "get": {
         "summary": "Get all posts",
         "tags": ["Posts"],
-        "security": [{
-          "bearerAuth": []
-        }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of posts",
             "content": {
               "application/json": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/Post"
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Post"
+                  }
                 }
               }
             }
@@ -248,38 +343,42 @@
         }
       }
     },
-    "/posts/sender": {
+    "/posts/poster/{posterId}": {
       "get": {
-        "summary": "Get posts by sender ID",
+        "summary": "Get posts by poster ID",
         "tags": ["Posts"],
-        "security": [{
-          "bearerAuth": []
-        }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
+            "name": "posterId",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "format": "uuid"
+              "format": "objectId"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "List of posts by sender",
+            "description": "List of posts by poster",
             "content": {
               "application/json": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/Post"
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Post"
+                  }
                 }
               }
             }
           },
           "404": {
-            "description": "Sender not found"
+            "description": "Poster not found"
           }
         }
       }
@@ -288,9 +387,11 @@
       "get": {
         "summary": "Get a post by post ID",
         "tags": ["Posts"],
-        "security": [{
-          "bearerAuth": []
-        }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -298,7 +399,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "format": "uuid"
+              "format": "objectId"
             }
           }
         ],
@@ -321,9 +422,11 @@
       "put": {
         "summary": "Update a post by ID",
         "tags": ["Posts"],
-        "security": [{
-          "bearerAuth": []
-        }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -331,7 +434,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "format": "uuid"
+              "format": "objectId"
             }
           }
         ],
@@ -342,10 +445,16 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "message": {
+                  "description": {
                     "type": "string",
-                    "description": "The updated content of the post",
-                    "required": true
+                    "description": "The updated content of the post"
+                  },
+                  "imageUrls": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Image URLs for the post"
                   }
                 }
               }
@@ -374,9 +483,11 @@
       "delete": {
         "summary": "Delete a post",
         "tags": ["Posts"],
-        "security": [{
-          "bearerAuth": []
-        }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -384,7 +495,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "format": "uuid"
+              "format": "objectId"
             }
           }
         ],
@@ -402,29 +513,32 @@
       "post": {
         "summary": "Create a new comment",
         "tags": ["Comments"],
-        "security": [{
-          "bearerAuth": []
-        }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["content", "senderId", "postId"],
+                "required": ["content", "commentorId", "postId"],
                 "properties": {
                   "content": {
                     "type": "string",
                     "description": "The content of the comment"
                   },
-                  "senderId": {
+                  "commentorId": {
                     "type": "string",
-                    "description": "The ID of the comment sender"
+                    "description": "The ID of the comment creator",
+                    "format": "objectId"
                   },
                   "postId": {
                     "type": "string",
                     "description": "The ID of the post the comment belongs to",
-                    "format": "uuid"
+                    "format": "objectId"
                   }
                 }
               }
@@ -439,13 +553,12 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "comment": {
+                    "message": {
                       "type": "string",
                       "description": "Success message"
                     },
-                    "post": {
-                      "type": "object",
-                      "description": "The saved comment details"
+                    "comment": {
+                      "$ref": "#/components/schemas/Comment"
                     }
                   }
                 }
@@ -489,9 +602,11 @@
       "get": {
         "summary": "Get all comments",
         "tags": ["Comments"],
-        "security": [{
-          "bearerAuth": []
-        }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of all comments",
@@ -500,8 +615,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "description": "Comment object"
+                    "$ref": "#/components/schemas/Comment"
                   }
                 }
               }
@@ -530,9 +644,11 @@
       "get": {
         "summary": "Get a comment by ID",
         "tags": ["Comments"],
-        "security": [{
-          "bearerAuth": []
-        }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -540,7 +656,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "format": "uuid"
+              "format": "objectId"
             }
           }
         ],
@@ -550,20 +666,24 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "description": "Comment object"
+                  "$ref": "#/components/schemas/Comment"
                 }
               }
             }
+          },
+          "404": {
+            "description": "Comment not found"
           }
         }
       },
       "put": {
         "summary": "Update a comment",
         "tags": ["Comments"],
-        "security": [{
-          "bearerAuth": []
-        }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -571,7 +691,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "format": "uuid"
+              "format": "objectId"
             }
           }
         ],
@@ -614,9 +734,11 @@
       "delete": {
         "summary": "Delete a comment",
         "tags": ["Comments"],
-        "security": [{
-          "bearerAuth": []
-        }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "id",
@@ -624,7 +746,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "format": "uuid"
+              "format": "objectId"
             }
           }
         ],
@@ -642,9 +764,11 @@
       "get": {
         "summary": "Get comments for a specific post",
         "tags": ["Comments"],
-        "security": [{
-          "bearerAuth": []
-        }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "postId",
@@ -652,7 +776,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "format": "uuid"
+              "format": "objectId"
             }
           }
         ],
@@ -661,9 +785,11 @@
             "description": "List of comments for the post",
             "content": {
               "application/json": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/Comment"
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Comment"
+                  }
                 }
               }
             }
@@ -674,47 +800,257 @@
         }
       }
     },
-    "/auth/register": {
+    "/likes": {
       "post": {
-        "summary": "Register a new user",
-        "tags": ["Authentication"],
-        "description": "Creates a new user with the provided username, email, and password.",
-        "consumes": ["application/json"],
-        "produces": ["application/json"],
-"requestBody": {
+        "summary": "Create a new like",
+        "tags": ["Likes"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/User"
+                "$ref": "#/components/schemas/Like"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "User successfully registered",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "_id": { "type": "string" },
-                "username": { "type": "string" },
-                "email": { "type": "string" },
-                "tokens": { "type": "array", "items": { "type": "string" } }
+            "description": "Like created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Like"
+                }
               }
             }
           },
-          "400": { "description": "Bad Request" }
+          "400": {
+            "description": "Bad request (missing or invalid data)"
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all likes",
+        "tags": ["Likes"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of likes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Like"
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
-    "/auth/login": {
+    "/likes/post/{postId}": {
+      "get": {
+        "summary": "Get likes for a specific post",
+        "tags": ["Likes"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of likes for the post",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Like"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/likes/user/{userId}/post/{postId}": {
+      "delete": {
+        "summary": "Delete a like by user ID and post ID",
+        "tags": ["Likes"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectId"
+            }
+          },
+          {
+            "name": "postId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectId"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Like deleted successfully"
+          },
+          "404": {
+            "description": "Like not found"
+          }
+        }
+      }
+    },
+    "/goals": {
       "post": {
-        "summary": "Login a user",
-        "tags": ["Authentication"],
-        "description": "Logs in a user and returns access and refresh tokens.",
-        "consumes": ["application/json"],
-        "produces": ["application/json"],
+        "summary": "Create a new goal",
+        "tags": ["Goals"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Goal"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Goal created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Goal"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (missing or invalid data)"
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all goals",
+        "tags": ["Goals"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of goals",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Goal"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/goals/{id}": {
+      "get": {
+        "summary": "Get a goal by ID",
+        "tags": ["Goals"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Goal details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Goal"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Goal not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a goal by ID",
+        "tags": ["Goals"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectId"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -722,8 +1058,14 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "email": { "type": "string" },
-                  "password": { "type": "string" }
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the goal"
+                  },
+                  "completed": {
+                    "type": "boolean",
+                    "description": "Whether the goal is completed"
+                  }
                 }
               }
             }
@@ -731,62 +1073,574 @@
         },
         "responses": {
           "200": {
-            "description": "User successfully logged in",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "id": { "type": "string" },
-                "username": { "type": "string" },
-                "email": { "type": "string" },
-                "accessToken": { "type": "string" },
-                "refreshToken": { "type": "string" }
+            "description": "Goal updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Goal"
+                }
               }
             }
           },
-          "400": { "description": "Bad email or password" }
+          "400": {
+            "description": "Bad Request (e.g., invalid input)"
+          },
+          "404": {
+            "description": "Goal not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a goal",
+        "tags": ["Goals"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectId"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Goal deleted successfully"
+          },
+          "404": {
+            "description": "Goal not found"
+          }
+        }
+      }
+    },
+    "/goals/user/{userId}": {
+      "get": {
+        "summary": "Get goals for a specific user",
+        "tags": ["Goals"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of goals for the user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Goal"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/steps": {
+      "post": {
+        "summary": "Create a new step",
+        "tags": ["Steps"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Step"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Step created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Step"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (missing or invalid data)"
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all steps",
+        "tags": ["Steps"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of steps",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Step"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/steps/{id}": {
+      "get": {
+        "summary": "Get a step by ID",
+        "tags": ["Steps"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Step details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Step"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Step not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a step by ID",
+        "tags": ["Steps"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectId"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "description": "The description of the step"
+                  },
+                  "completed": {
+                    "type": "boolean",
+                    "description": "Whether the step is completed"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Step updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Step"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request (e.g., invalid input)"
+          },
+          "404": {
+            "description": "Step not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a step",
+        "tags": ["Steps"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectId"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Step deleted successfully"
+          },
+          "404": {
+            "description": "Step not found"
+          }
+        }
+      }
+    },
+    "/steps/goal/{goalId}": {
+      "get": {
+        "summary": "Get steps for a specific goal",
+        "tags": ["Steps"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "goalId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "objectId"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of steps for the goal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Step"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request (e.g., invalid goal ID)"
+          },
+          "403": {
+            "description": "Forbidden (e.g., trying to access another user's goal)"
+          },
+          "404": {
+            "description": "Goal not found"
+          }
+        }
+      }
+    },
+    "/guru": {
+      "post": {
+        "summary": "Create or update a goal with AI assistance",
+        "tags": ["Guru"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string",
+                    "description": "The user's natural language prompt about their goal"
+                  },
+                  "goalId": {
+                    "type": "string",
+                    "description": "The ID of an existing goal (optional)",
+                    "format": "objectId"
+                  },
+                  "history": {
+                    "type": "array",
+                    "description": "Previous conversation history with the AI (optional)",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "role": {
+                          "type": "string",
+                          "enum": ["user", "assistant"]
+                        },
+                        "content": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "required": ["prompt"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Goal created or updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Step"
+                      }
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "The name of the goal"
+                    },
+                    "_id": {
+                      "type": "string",
+                      "description": "The ID of the goal",
+                      "format": "objectId"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A friendly message from the AI assistant"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request (e.g., empty prompt)"
+          },
+          "404": {
+            "description": "Goal not found when updating an existing goal"
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "summary": "Register a new user",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["username", "email", "password"],
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "description": "Username for the new account"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Email address for the new account"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Password for the new account"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    },
+                    "token": {
+                      "type": "string",
+                      "description": "JWT authentication token"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (e.g., validation error, user already exists)"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Login to an existing account",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "User's email address"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "User's password"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    },
+                    "token": {
+                      "type": "string",
+                      "description": "JWT authentication token"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid credentials"
+          }
         }
       }
     },
     "/auth/logout": {
       "post": {
-        "summary": "Logout a user",
+        "summary": "Logout from the current session",
         "tags": ["Authentication"],
-        "security": [{
-          "bearerAuth": []
-        }],
-        "description": "Logs out a user and invalidates the provided refresh token.",
-        "produces": ["application/json"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
-          "200": { "description": "User successfully logged out" },
-          "401": { "description": "Unauthorized" },
-          "403": { "description": "Invalid request or token" }
+          "200": {
+            "description": "Logout successful"
+          },
+          "401": {
+            "description": "Unauthorized (not logged in)"
+          }
         }
       }
     },
-    "/auth/refreshToken": {
-      "post": {
-        "summary": "Refresh access token",
+    "/auth/me": {
+      "get": {
+        "summary": "Get the current authenticated user's profile",
         "tags": ["Authentication"],
-        "security": [{
-          "bearerAuth": []
-        }],
-        "description": "Generates a new access token and refresh token using the provided refresh token.",
-        "produces": ["application/json"],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "responses": {
           "200": {
-            "description": "New tokens generated",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "accessToken": { "type": "string" },
-                "refreshToken": { "type": "string" }
+            "description": "User profile retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
               }
             }
           },
-          "401": { "description": "Unauthorized" },
-          "403": { "description": "Invalid request or token" }
+          "401": {
+            "description": "Unauthorized (not logged in)"
+          }
         }
       }
+    }
   }
-}
 }
