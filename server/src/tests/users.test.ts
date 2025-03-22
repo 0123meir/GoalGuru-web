@@ -19,7 +19,7 @@ const loginUser = async (user) =>
 
 beforeEach(async () => {
   const sampleUser = {
-    username: "TestUser",
+    name: "TestUser",
     email: "testuser@example.com",
     password: "securepassword",
   };

@@ -11,8 +11,8 @@ let goalId: ObjectId;
 let accessToken: string;
 let creatorId: ObjectId;
 const mockUser = {
-  username: "123meir",
-  email: "meir@mail.com",
+  name: "123meir",
+  email: `meir${Math.floor(Math.random() * 100000)}@mail.com`,
   password: "superSecretPassword",
 };
 
@@ -55,7 +55,6 @@ describe("Testing Goal Routes", () => {
         .set("Authorization", "Bearer " + accessToken)
         .send({
           name: "Hello, world!",
-          creatorId: creatorId,
           completed: false
         });
 
@@ -80,7 +79,6 @@ describe("Testing Goal Routes", () => {
         .set("Authorization", "Bearer " + accessToken)
         .send({
           name: 12345,
-          steps: "123",
           completed: "abc"
         });
 
@@ -101,7 +99,7 @@ describe("Testing Goal Routes", () => {
     });
 
     it("should return an empty array if no goals exist", async () => {
-      await Goal.deleteMany();
+      await Goal.deleteMany({});
       const res = await request(app)
         .get("/goals")
         .set("Authorization", "Bearer " + accessToken);
@@ -117,7 +115,7 @@ describe("Testing Goal Routes", () => {
       const sampleGoal = new Goal({
         name: "By sender",
         creatorId: creatorId,
-        steps: [],
+        completed: false
       });
       await sampleGoal.save();
 
@@ -157,21 +155,35 @@ describe("Testing Goal Routes", () => {
         .set("Authorization", "Bearer " + accessToken);
 
       expect(res.statusCode).toBe(400);
+      expect(res.body).toHaveProperty("error", "Invalid goal ID");
     });
   });
 
   describe("PUT /goals/:id", () => {
-    it("should update a goal by ID", async () => {
+    it("should update a goal name by ID", async () => {
       const res = await request(app)
         .put(`/goals/${goalId}`)
         .set("Authorization", "Bearer " + accessToken)
         .send({
-          name: "Updated name!",
+          name: "Updated name!"
         });
 
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty("_id", goalId.toString());
       expect(res.body).toHaveProperty("name", "Updated name!");
+    });
+
+    it("should update a goal completed status by ID", async () => {
+      const res = await request(app)
+        .put(`/goals/${goalId}`)
+        .set("Authorization", "Bearer " + accessToken)
+        .send({
+          completed: false
+        });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty("_id", goalId.toString());
+      expect(res.body).toHaveProperty("completed", false);
     });
 
     it("should return 400 for missing body parameters", async () => {
@@ -181,7 +193,7 @@ describe("Testing Goal Routes", () => {
         .send({});
 
       expect(res.statusCode).toBe(400);
-      expect(res.body).toBe("required body not provided");
+      expect(res.body).toBe("Required body not provided");
     });
 
     it("should return 400 for invalid name type", async () => {
@@ -189,10 +201,23 @@ describe("Testing Goal Routes", () => {
         .put(`/goals/${goalId}`)
         .set("Authorization", "Bearer " + accessToken)
         .send({
-          name: 12345,
+          name: 12345
         });
+
       expect(res.statusCode).toBe(400);
-      expect(res.body).toBe("required body not provided");
+      expect(res.body).toBe("Wrong type for name parameter");
+    });
+
+    it("should return 400 for invalid completed type", async () => {
+      const res = await request(app)
+        .put(`/goals/${goalId}`)
+        .set("Authorization", "Bearer " + accessToken)
+        .send({
+          completed: "not-a-boolean"
+        });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toBe("Wrong type for completed parameter");
     });
 
     it("should return 404 for non-existent goal ID", async () => {
@@ -201,7 +226,7 @@ describe("Testing Goal Routes", () => {
         .put(`/goals/${invalidId}`)
         .set("Authorization", "Bearer " + accessToken)
         .send({
-          name: "Non-existent goal update",
+          name: "Non-existent goal update"
         });
 
       expect(res.statusCode).toBe(404);
@@ -213,9 +238,42 @@ describe("Testing Goal Routes", () => {
         .put("/goals/invalid-id")
         .set("Authorization", "Bearer " + accessToken)
         .send({
-          name: "Invalid ID format test",
+          name: "Invalid ID format test"
         });
       expect(res.statusCode).toBe(400);
+      expect(res.body).toHaveProperty("error", "Invalid goal ID");
+    });
+  });
+
+  describe("DELETE /goals/:id", () => {
+    it("should delete a goal by ID", async () => {
+      const res = await request(app)
+        .delete(`/goals/${goalId}`)
+        .set("Authorization", "Bearer " + accessToken);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty("message", "Goal deleted successfully");
+      expect(res.body).toHaveProperty("goal");
+      expect(res.body.goal).toHaveProperty("_id", goalId.toString());
+    });
+
+    it("should return 404 for non-existent goal ID", async () => {
+      const invalidId = new Types.ObjectId();
+      const res = await request(app)
+        .delete(`/goals/${invalidId}`)
+        .set("Authorization", "Bearer " + accessToken);
+
+      expect(res.statusCode).toBe(404);
+      expect(res.body).toHaveProperty("error", "Goal not found");
+    });
+
+    it("should return 400 for invalid goal ID format", async () => {
+      const res = await request(app)
+        .delete("/goals/invalid-id")
+        .set("Authorization", "Bearer " + accessToken);
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toHaveProperty("error", "Invalid goal ID");
     });
   });
 });

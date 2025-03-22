@@ -13,6 +13,9 @@ export async function addLike(userId: string, postId: string) {
   }
 }
 
+export async function findLike(userId: string, postId: string) {
+  return await Like.findOne({ postId, userId });
+}
 export async function removeLike(userId: string, postId: string) {
   return await Like.deleteOne({ postId, userId });
 }

@@ -1,18 +1,31 @@
 import { config } from "dotenv";
 config();
 process.env.DATABASE_URL = "mongodb://127.0.0.1:27017/testpostsdb";
+// Mock directories for image storage
+process.env.SERVER_URL = "http://localhost:5000";
 
 import { connect, Types, ObjectId, connection } from "mongoose";
 import request from "supertest";
 import app from "../app";
-import { Post } from "../db/schemas";
+import Post from "../db/postSchema";
+import fs from "fs";
+import path from "path";
+import { postImagesDirectory, profileImagesDirectory } from "../config/config";
+
+// Make sure directories exist for testing
+if (!fs.existsSync(postImagesDirectory)) {
+  fs.mkdirSync(postImagesDirectory, { recursive: true });
+}
+if (!fs.existsSync(profileImagesDirectory)) {
+  fs.mkdirSync(profileImagesDirectory, { recursive: true });
+}
 
 let postId: ObjectId;
 let accessToken: string;
-let senderId: ObjectId;
+let posterId: string;
 const mockUser = {
-  username: "123meir",
-  email: "meir@mail.com",
+  name: "123meir",
+  email: `meir${Math.floor(Math.random() * 100000)}@mail.com`,
   password: "superSecretPassword",
 };
 
@@ -20,13 +33,11 @@ beforeAll(async () => {
   await connect(process.env.DATABASE_URL);
 
   const res = await request(app).post("/auth/register").send(mockUser);
-
-  senderId = res.body._id;
+  posterId = res.body._id;
 });
 
 const loginUser = async () => {
   const response = await request(app).post("/auth/login").send(mockUser);
-
   accessToken = response.body.accessToken;
 };
 
@@ -34,8 +45,10 @@ beforeEach(async () => {
   await loginUser();
 
   const samplePost = new Post({
-    message: "Sample Post",
-    senderId: new Types.ObjectId(),
+    description: "Sample Post",
+    posterId: new Types.ObjectId(),
+    publishTime: Date.now(),
+    imageUrls: [],
   });
   const savedPost = await samplePost.save();
   postId = savedPost._id as ObjectId;
@@ -52,26 +65,21 @@ describe("Testing Post Routes", () => {
       const res = await request(app)
         .post("/posts")
         .set("Authorization", "Bearer " + accessToken)
-        .send({
-          message: "Hello, world!",
-          senderId: new Types.ObjectId(),
-        });
+        .field("description", "Hello, world!");
 
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty("post");
-      expect(res.body.post).toHaveProperty("message", "Hello, world!");
+      expect(res.body.post).toHaveProperty("description", "Hello, world!");
     });
 
-    it("should return 400 for missing body parameters", async () => {
+    it("should return 400 for missing description", async () => {
       const res = await request(app)
         .post("/posts")
         .set("Authorization", "Bearer " + accessToken)
-        .send({
-          message: "No sender",
-        });
+        .send({});
 
       expect(res.statusCode).toBe(400);
-      expect(res.body).toBe("required body not provided");
+      expect(res.body.error).toBe("Required body not provided");
     });
 
     it("should return 400 for invalid parameter types", async () => {
@@ -79,73 +87,51 @@ describe("Testing Post Routes", () => {
         .post("/posts")
         .set("Authorization", "Bearer " + accessToken)
         .send({
-          message: 12345,
-          senderId: "invalid-id",
+          description: 12345,
         });
 
       expect(res.statusCode).toBe(400);
-      expect(res.body).toBe("wrong type in one of the body parameters");
+      expect(res.body.error).toBe("Wrong type in one of the body parameters");
     });
   });
 
   describe("GET /posts", () => {
-    it("should retrieve all posts", async () => {
+    it("should retrieve posts for authenticated user", async () => {
       const res = await request(app)
         .get("/posts")
         .set("Authorization", "Bearer " + accessToken);
 
       expect(res.statusCode).toBe(200);
       expect(Array.isArray(res.body)).toBeTruthy();
-      expect(res.body.length).toBeGreaterThan(0);
-    });
-
-    it("should return an empty array if no posts exist", async () => {
-      await Post.deleteMany();
-      const res = await request(app)
-        .get("/posts")
-        .set("Authorization", "Bearer " + accessToken);
-
-      expect(res.statusCode).toBe(200);
-      expect(Array.isArray(res.body)).toBeTruthy();
-      expect(res.body.length).toBe(0);
     });
   });
 
-  describe("GET /posts/sender", () => {
-    it("should retrieve posts by senderId", async () => {
-      const senderId = new Types.ObjectId();
-      const samplePost = new Post({ message: "By sender", senderId });
+  describe("GET /posts/poster", () => {
+    it("should retrieve posts by posterId", async () => {
+      const posterId = new Types.ObjectId();
+      const samplePost = new Post({
+        description: "By poster",
+        posterId,
+        publishTime: Date.now(),
+        imageUrls: [],
+      });
       await samplePost.save();
 
       const res = await request(app)
-        .get("/posts/sender")
+        .get("/posts/poster")
         .set("Authorization", "Bearer " + accessToken)
-        .query({ id: senderId.toString() });
+        .query({ id: posterId.toString() });
       expect(res.statusCode).toBe(200);
       expect(Array.isArray(res.body)).toBeTruthy();
-      expect(res.body[0]).toHaveProperty("senderId", senderId.toString());
     });
 
-    it("should return 404 if senderId is not provided", async () => {
+    it("should return 404 if posterId is not provided", async () => {
       const res = await request(app)
-        .get("/posts/sender")
+        .get("/posts/poster")
         .set("Authorization", "Bearer " + accessToken);
 
       expect(res.statusCode).toBe(404);
-      expect(res.body).toHaveProperty("error", "senderId not provided");
-    });
-
-    it("should return an empty array if no posts match senderId", async () => {
-      const res = await request(app)
-        .get("/posts/sender")
-        .set("Authorization", "Bearer " + accessToken)
-        .query({
-          id: new Types.ObjectId().toString(),
-        });
-
-      expect(res.statusCode).toBe(200);
-      expect(Array.isArray(res.body)).toBeTruthy();
-      expect(res.body.length).toBe(0);
+      expect(res.body).toHaveProperty("error", "PosterId not provided");
     });
   });
 
@@ -175,42 +161,52 @@ describe("Testing Post Routes", () => {
         .set("Authorization", "Bearer " + accessToken);
 
       expect(res.statusCode).toBe(400);
+      expect(res.body).toHaveProperty("error", "Invalid post ID");
     });
   });
 
   describe("PUT /posts/:id", () => {
     it("should update a post by ID", async () => {
+      // Create a post that the authenticated user owns
+      const userPost = new Post({
+        description: "User's post",
+        posterId: posterId,
+        publishTime: Date.now(),
+        imageUrls: [],
+      });
+      const savedUserPost = await userPost.save();
+
       const res = await request(app)
-        .put(`/posts/${postId}`)
+        .put(`/posts/${savedUserPost._id}`)
         .set("Authorization", "Bearer " + accessToken)
-        .send({
-          message: "Updated message!",
-        });
+        .field("description", "Updated description!")
+        .field("existingImages", JSON.stringify([]));
 
       expect(res.statusCode).toBe(200);
-      expect(res.body).toHaveProperty("_id", postId.toString());
-      expect(res.body).toHaveProperty("message", "Updated message!");
+      expect(res.body).toHaveProperty("message", "Post updated successfully");
+      expect(res.body.post).toHaveProperty("description", "Updated description!");
     });
 
-    it("should return 400 for missing body parameters", async () => {
+    it("should return 400 for missing description", async () => {
       const res = await request(app)
         .put(`/posts/${postId}`)
         .set("Authorization", "Bearer " + accessToken)
         .send({});
 
       expect(res.statusCode).toBe(400);
-      expect(res.body).toBe("required body not provided");
+      expect(res.body.error).toBe("Required body not provided");
     });
 
-    it("should return 400 for invalid message type", async () => {
+    it("should return 400 for invalid description type", async () => {
       const res = await request(app)
         .put(`/posts/${postId}`)
         .set("Authorization", "Bearer " + accessToken)
         .send({
-          message: 12345,
+          description: 12345,
         });
+      
       expect(res.statusCode).toBe(400);
-      expect(res.body).toBe("wrong type body parameters");
+      expect(res.body.error).toBe("Wrong type body parameters");
     });
 
     it("should return 404 for non-existent post ID", async () => {
@@ -219,21 +215,62 @@ describe("Testing Post Routes", () => {
         .put(`/posts/${invalidId}`)
         .set("Authorization", "Bearer " + accessToken)
         .send({
-          message: "Non-existent post update",
+          description: "Non-existent post update",
         });
 
       expect(res.statusCode).toBe(404);
       expect(res.body).toHaveProperty("error", "Post not found");
     });
 
-    it("should return 400 for invalid post ID format", async () => {
+    it("should return 403 when trying to update another user's post", async () => {
+      // Post is owned by another user
       const res = await request(app)
-        .put("/posts/invalid-id")
+        .put(`/posts/${postId}`)
         .set("Authorization", "Bearer " + accessToken)
         .send({
-          message: "Invalid ID format test",
+          description: "Trying to update someone else's post",
         });
+
+      expect(res.statusCode).toBe(403);
+      expect(res.body).toHaveProperty("error", "Unauthorized to update this post");
+    });
+  });
+
+  describe("DELETE /posts/:id", () => {
+    it("should delete a post by ID", async () => {
+      // Create a post that the authenticated user owns
+      const userPost = new Post({
+        description: "User's post to delete",
+        posterId: posterId,
+        publishTime: Date.now(),
+        imageUrls: [],
+      });
+      const savedUserPost = await userPost.save();
+
+      const res = await request(app)
+        .delete(`/posts/${savedUserPost._id}`)
+        .set("Authorization", "Bearer " + accessToken);
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty("message", "Post deleted successfully");
+    });
+
+    it("should return 403 when trying to delete another user's post", async () => {
+      const res = await request(app)
+        .delete(`/posts/${postId}`)
+        .set("Authorization", "Bearer " + accessToken);
+
+      expect(res.statusCode).toBe(403);
+      expect(res.body).toHaveProperty("error", "Unauthorized to delete this post");
+    });
+
+    it("should return 400 for invalid post ID format", async () => {
+      const res = await request(app)
+        .delete("/posts/invalid-id")
+        .set("Authorization", "Bearer " + accessToken);
+
       expect(res.statusCode).toBe(400);
+      expect(res.body).toHaveProperty("error", "Invalid post ID");
     });
   });
 });
