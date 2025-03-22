@@ -1,5 +1,3 @@
-import React from "react";
-
 type Tab = "myPosts" | "Explore";
 
 interface PostTabsProps {
@@ -7,7 +5,7 @@ interface PostTabsProps {
   onTabChange: (tab: Tab) => void;
 }
 
-const PostTabs: React.FC<PostTabsProps> = ({ activeTab, onTabChange }) => {
+const PostTabs = ({ activeTab, onTabChange }: PostTabsProps) => {
   return (
     <div className="flex justify-center py-4 border-b border-gray-200 bg-white">
       <div className="flex space-x-8">

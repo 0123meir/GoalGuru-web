@@ -7,7 +7,7 @@ type GoalStepsInputProps = {
   goalId: string;
 };
 
-const GoalStepsInput: React.FC<GoalStepsInputProps> = ({ goalId }) => {
+const GoalStepsInput = ({ goalId }: GoalStepsInputProps) => {
   const [newStep, setNewStep] = useState("");
   const { addStep } = useStepApi();
   const handleAddStep = () => {

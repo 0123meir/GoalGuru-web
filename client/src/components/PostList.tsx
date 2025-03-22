@@ -1,7 +1,7 @@
-import React from "react";
 import { Post } from "@/types/forum";
-import PostItem from "./PostItem";
+
 import EmptyPostsState from "./EmptyPostsState";
+import PostItem from "./PostItem";
 
 interface PostListProps {
   posts: Post[];
@@ -12,14 +12,14 @@ interface PostListProps {
   currentUserId: string;
 }
 
-const PostList: React.FC<PostListProps> = ({
+const PostList = ({
   posts,
   togglePostLike,
   onCommentSubmit,
   onDeletePost,
   onEditPost,
-  currentUserId
-}) => {
+  currentUserId,
+}: PostListProps) => {
   if (posts.length === 0) {
     return <EmptyPostsState />;
   }

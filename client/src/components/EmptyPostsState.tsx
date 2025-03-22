@@ -1,7 +1,6 @@
-import React from "react";
 import EmptyPostsIcon from "@/assets/EmptyPosts";
 
-const EmptyPostsState: React.FC = () => {
+const EmptyPostsState = () => {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
       <div className="w-40 h-40 mb-6">

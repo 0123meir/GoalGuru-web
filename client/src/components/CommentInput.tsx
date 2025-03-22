@@ -1,12 +1,13 @@
-import React, { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useState } from "react";
 
 interface CommentInputProps {
   onSubmit: (content: string) => void;
 }
 
-const CommentInput: React.FC<CommentInputProps> = ({ onSubmit }) => {
+const CommentInput = ({ onSubmit }: CommentInputProps) => {
   const [comment, setComment] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -30,8 +31,8 @@ const CommentInput: React.FC<CommentInputProps> = ({ onSubmit }) => {
         type="submit"
         disabled={!comment.trim()}
         className={`ml-2 p-2 rounded-full focus:outline-none ${
-          comment.trim() 
-            ? "text-blue-500 hover:bg-blue-50" 
+          comment.trim()
+            ? "text-blue-500 hover:bg-blue-50"
             : "text-gray-400 cursor-not-allowed"
         }`}
       >

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsisV, faHeart as solidHeart } from "@fortawesome/free-solid-svg-icons";
@@ -19,14 +19,14 @@ interface PostItemProps {
   currentUserId: string;
 }
 
-const PostItem: React.FC<PostItemProps> = ({
+const PostItem = ({
   post,
   togglePostLike,
   onCommentSubmit,
   onDeletePost,
   onEditPost,
   currentUserId
-}) => {
+}: PostItemProps) => {
   const [showComments, setShowComments] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -66,7 +66,7 @@ const PostItem: React.FC<PostItemProps> = ({
               onClick={() => setMenuOpen(!menuOpen)}
               className="text-gray-500 hover:text-gray-700 p-1 rounded-full"
             >
-              <FontAwesomeIcon icon={faEllipsisV} size="sm" />
+              <FontAwesomeIcon icon={faEllipsisV} size="1x" />
             </button>
             
             {menuOpen && (

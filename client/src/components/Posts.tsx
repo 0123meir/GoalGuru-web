@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
+
 import { Post } from "@/types/forum";
-import PostList from "./PostList";
-import CreatePostButton from "./CreatePostButton";
+
 import CreateEditPostForm from "./CreateEditPostForm";
+import CreatePostButton from "./CreatePostButton";
+import PostList from "./PostList";
 import PostTabs from "./PostTabs";
 
 type Tab = "myPosts" | "Explore";
@@ -18,7 +20,7 @@ interface PostsPageProps {
   currentUserId: string;
 }
 
-const PostsPage: React.FC<PostsPageProps> = ({
+const PostsPage = ({
   myPosts,
   explorePosts,
   togglePostLike,
@@ -26,31 +28,31 @@ const PostsPage: React.FC<PostsPageProps> = ({
   onDeletePost,
   onCreatePost,
   onEditPost,
-  currentUserId
-}) => {
+  currentUserId,
+}: PostsPageProps) => {
   const [activeTab, setActiveTab] = useState<Tab>("myPosts");
   const [isCreateEditModalOpen, setIsCreateEditModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  
+
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
   };
-  
+
   const handleOpenCreateModal = () => {
     setSelectedPost(null);
     setIsCreateEditModalOpen(true);
   };
-  
+
   const handleOpenEditModal = (post: Post) => {
     setSelectedPost(post);
     setIsCreateEditModalOpen(true);
   };
-  
+
   const handleCloseModal = () => {
     setIsCreateEditModalOpen(false);
     setSelectedPost(null);
   };
-  
+
   const handleSubmitPost = (postId: string | null, formData: FormData) => {
     if (postId) {
       onEditPost(postId, formData);
@@ -58,16 +60,16 @@ const PostsPage: React.FC<PostsPageProps> = ({
       onCreatePost(formData);
     }
   };
-  
+
   const displayPosts = activeTab === "myPosts" ? myPosts : explorePosts;
-  
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       {/* Header Tabs */}
       <header className="sticky top-0 z-10">
         <PostTabs activeTab={activeTab} onTabChange={handleTabChange} />
       </header>
-      
+
       {/* Main Content */}
       <main className="flex-1 p-4">
         <div className="max-w-2xl mx-auto relative pb-16">
@@ -76,19 +78,21 @@ const PostsPage: React.FC<PostsPageProps> = ({
             togglePostLike={togglePostLike}
             onCommentSubmit={onCommentSubmit}
             onDeletePost={activeTab === "myPosts" ? onDeletePost : undefined}
-            onEditPost={activeTab === "myPosts" ? handleOpenEditModal : undefined}
+            onEditPost={
+              activeTab === "myPosts" ? handleOpenEditModal : undefined
+            }
             currentUserId={currentUserId}
           />
-          
-          {/* Create Post Button (only show on My Posts tab) */}
-          {activeTab === "myPosts" && (
+
+          {/* Create Post Button */}
+          {
             <div className="sticky bottom-4 flex justify-end">
               <CreatePostButton onClick={handleOpenCreateModal} />
             </div>
-          )}
+          }
         </div>
       </main>
-      
+
       {/* Create/Edit Post Modal */}
       <CreateEditPostForm
         isOpen={isCreateEditModalOpen}

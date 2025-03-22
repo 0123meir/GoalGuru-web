@@ -19,12 +19,12 @@ interface CreateEditPostFormProps {
 const MAX_IMAGES = 4;
 const MAX_DESCRIPTION_LENGTH = 200;
 
-const CreateEditPostForm: React.FC<CreateEditPostFormProps> = ({
+const CreateEditPostForm = ({
   handleSubmit,
   isOpen,
   onClose,
   post,
-}) => {
+}: CreateEditPostFormProps) => {
   const [images, setImages] = useState<File[]>([]);
 
   const [description, setDescription] = useState<string>("");
