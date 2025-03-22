@@ -15,7 +15,7 @@ interface HeaderProps {
 const Header = ({ rightIcon }: HeaderProps) => {
   const navigate = useNavigate();
   const { clearTokens } = useAuthTokens();
-  const { username, googleAuth, setUsername, userId } = useUserStore();
+  const { username, setUsername, userId } = useUserStore();
   const { updateUser } = useUserApi();
   const [isEditingUsername, setIsEditingUsername] = useState<boolean>(false);
   const [newUsername, setNewUsername] = useState<string>(username);

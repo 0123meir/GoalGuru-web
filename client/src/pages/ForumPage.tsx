@@ -17,7 +17,7 @@ import PostTabs from "../components/PostTabs";
 
 export const ForumPage = () => {
   type Tab = "myPosts" | "Explore";
-  const [activeTab, setActiveTab] = useState<Tab>("myPosts");
+  const [activeTab, setActiveTab] = useState<Tab>("Explore");
   const [posts, setPosts] = useState<Post[]>([]);
   const [page, setPage] = useState<number>(1);
   const [showPageCounter, setShowPageCounter] = useState<boolean>(true);
@@ -205,7 +205,6 @@ export const ForumPage = () => {
 
       <div className="flex-1 overflow-y-auto pt-4 pb-20 justify-items-center">
         {activeTab === "myPosts" && (
-          <>
             <PostList
               posts={getOwnPosts()}
               togglePostLike={togglePostLike}
@@ -214,15 +213,6 @@ export const ForumPage = () => {
               onEditPost={handleEditPost}
               currentUserId={userId}
             />
-            {showPageCounter && getOwnPosts().length > 0 && (
-              <button
-                className="hover:bg-slate-300 rounded-full my-3 text-3xl"
-                onClick={() => setPage((prev) => prev + 1)}
-              >
-                <AddIcon />
-              </button>
-            )}
-          </>
         )}
         {activeTab === "Explore" && (
           <>
