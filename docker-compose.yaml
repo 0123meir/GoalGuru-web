@@ -19,6 +19,8 @@ services:
       - ./server/.env
     depends_on:
       - mongodb
+    volumes:
+      - ./server/images_storage:/app/images_storage
   client:
     build: ./client
     env_file:

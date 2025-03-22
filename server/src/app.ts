@@ -25,7 +25,7 @@ app.use(bodyParser.json());
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // Allow requests from React (adjust port if needed)
+    origin: ["https://localhost", "https://localhost:443"], // Allow requests from React (adjust port if needed)
     credentials: true, // Allow cookies if needed
   })
 );

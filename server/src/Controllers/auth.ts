@@ -26,7 +26,6 @@ interface JwtPayload {
 
 const router = express.Router();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.join(__dirname, "../../image_storage/profile_images");
@@ -47,7 +46,7 @@ const extractUserProps = (user: any): UserProps => ({
   username: user.username,
   email: user.email,
   tokens: user.tokens,
-  profileImage: user.profileImage
+  profileImage: formatProfileImage(user.profileImage)
 });
 
 const sendError = (res: Response, errorMessage = "") =>
