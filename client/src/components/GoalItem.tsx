@@ -18,7 +18,7 @@ type GoalItemProps = {
   goal: Goal;
 };
 
-const GoalItem: React.FC<GoalItemProps> = ({ goal }) => {
+const GoalItem = ({ goal }: GoalItemProps) => {
   const [expanded, setExpanded] = useState(false);
   const { deleteGoal, toggleAllSteps } = useGoalApi();
 

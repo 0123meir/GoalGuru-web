@@ -17,7 +17,12 @@ export interface Post {
   isLikedByUser: boolean;
   comments: Comment[];
 }
-
+export interface PostDBEntity {
+  _id: string;
+  description: string;
+  publishTime: Date;
+  imageUrls: string[];
+}
 export interface newPost {
   description: string;
   images: File[];

@@ -7,7 +7,7 @@ type GoalStepProps = {
   goalId: string;
 };
 
-const GoalStep: React.FC<GoalStepProps> = ({ step, goalId }) => {
+const GoalStep = ({ step, goalId }: GoalStepProps) => {
   const { deleteStep, updateStep } = useStepApi();
 
   return (
