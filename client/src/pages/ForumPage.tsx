@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 
+import { useUserStore } from "@/store/useUserStore";
+
 import useApiRequests from "@/hooks/useApiRequests";
-import useLocalStorage from "@/hooks/useLocalStorage";
 
 import Header from "@/components/Header";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -10,7 +11,6 @@ import { Post } from "@/types/forum";
 
 import NewPostForm from "../components/NewPostForm";
 import { Posts } from "../components/Posts";
-import { useUserStore } from "@/store/useUserStore";
 
 export const ForumPage = () => {
   type Tab = "myPosts" | "Explore";
@@ -18,8 +18,7 @@ export const ForumPage = () => {
   const [posts, setPosts] = useState<Post[] | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { getItem } = useLocalStorage("userId");
-  const userId = getItem();
+  const { userId, username, userProfileImage } = useUserStore();
   const api = useApiRequests();
 
   useEffect(() => {
@@ -35,7 +34,7 @@ export const ForumPage = () => {
     };
     fetchPosts();
   }, []);
-  
+
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
   };
@@ -106,10 +105,14 @@ export const ForumPage = () => {
 
       const newPost: Post = {
         ...response.data.post,
-        publishTime: new Date(response.data.post.publishDate),
         comments: [],
         isLikedByUser: false,
-        
+        likesCount: 0,
+        poster: {
+          _id: userId,
+          profileImage: userProfileImage,
+          username,
+        },
       };
       setPosts((prevPosts) => [newPost, ...(prevPosts || [])]);
     } catch (error) {
@@ -134,10 +137,10 @@ export const ForumPage = () => {
     }
   };
 
-  const getFriendsPosts = () => 
-    posts ? posts.filter((post) => post._id !== userId) : [];
+  const getFriendsPosts = () =>
+    posts ? posts.filter((post) => post.poster._id !== userId) : [];
 
-  const getOwnPosts = () => 
+  const getOwnPosts = () =>
     posts ? posts.filter((post) => post.poster._id === userId) : [];
 
   if (loading) {
@@ -145,7 +148,7 @@ export const ForumPage = () => {
   }
   return (
     <>
-      <Header rightIcon={"todo"}/>
+      <Header rightIcon={"todo"} />
       <NewPostForm
         handleNewPostSubmit={handleNewPostSubmit}
         isOpen={isModalOpen}
@@ -197,7 +200,6 @@ export const ForumPage = () => {
               posts={getFriendsPosts()}
               togglePostLike={togglePostLike}
               onCommentSubmit={handleCommentSubmit}
-            
             />
           )}
         </div>
