@@ -12,8 +12,8 @@ let creatorId: ObjectId;
 let stepId: ObjectId;
 let accessToken: string;
 const mockUser = {
-  username: "123meir",
-  email: "meir@mail.com",
+  name: "123meir",
+  email: `meir${Math.floor(Math.random() * 100000)}@mail.com`,
   password: "superSecretPassword",
 };
 
@@ -119,11 +119,10 @@ describe("Step Routes Tests", () => {
       .get(`/steps/${new Types.ObjectId()}`)
       .set("Authorization", "Bearer " + accessToken);
     expect(res.statusCode).toBe(404);
+    expect(res.body).toHaveProperty("error", "Step not found");
   });
 
   it("should retrieve steps by goalId", async () => {
-    const steps = await Step.find();
-
     const res = await request(app)
       .get(`/steps/goal/${goalId}`)
       .set("Authorization", "Bearer " + accessToken);
@@ -151,6 +150,7 @@ describe("Step Routes Tests", () => {
 
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty("description", "Updated step description");
+    expect(res.body).toHaveProperty("completed", true);
   });
 
   it("should return 400 for missing body in update", async () => {
@@ -184,9 +184,11 @@ describe("Step Routes Tests", () => {
   });
 
   it("should return 404 for non-existent step ID in delete", async () => {
+    const nonExistentId = new Types.ObjectId();
     const res = await request(app)
-      .delete(`/steps/${new Types.ObjectId()}`)
+      .delete(`/steps/${nonExistentId}`)
       .set("Authorization", "Bearer " + accessToken);
     expect(res.statusCode).toBe(404);
+    expect(res.body).toHaveProperty("error", "Step not found");
   });
 });

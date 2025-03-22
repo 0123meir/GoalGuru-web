@@ -118,17 +118,17 @@ Authorization: Bearer {{token}}
 
 ### auth API
 
-POST http://localhost:3000/auth/register
+POST https://localhost:3000/auth/register
 Content-Type: application/json
 
 {
-    "username": "testImageUser",
-    "email": "testUser@example.com",
+    "name": "testImageUsaaer",
+    "email": "testUser@examplaae.com",
     "password": "1234"
 }
 ###
 
-POST http://localhost:3000/auth/login
+POST https://localhost:3000/auth/login
 Content-Type: application/json
 
 {
