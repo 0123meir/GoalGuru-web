@@ -13,7 +13,7 @@ export const profileImagesDirectory = path.join(
 export const serverUrl = process.env.SERVER_URL || "https://localhost:5000";
 export const formatProfileImage = (profileImage: string) =>{
   const normalizedPath = profileImage.replace(/\\/g, "/");
-  return `${serverUrl}/profile_images/${path.basename(normalizedPath)}`
+  return profileImage.includes('google') ? profileImage : `${serverUrl}/profile_images/${path.basename(normalizedPath)}`
 }
 export const formatPostImage = (image: string) =>
 {
