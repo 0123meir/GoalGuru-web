@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { useUserStore } from "@/store/useUserStore";
 
 import useAuthTokens from "@/hooks/useAuthTokens";
-import useLocalStorage from "@/hooks/useLocalStorage";
 import { useUserApi } from "@/hooks/useUserApi";
 import { useProfilePhoto } from "@/hooks/useProfilePhoto";
 import { MdUpload as UploadIcon, MdCancel as CancelIcon} from "react-icons/md";
@@ -61,9 +60,8 @@ const Header = ({ rightIcon }: HeaderProps) => {
         </button>
       </div>
 
-      {!googleAuth && (
-        <div className="flex content-center justify-self-start items-center ml-1">
 
+        <div className="flex content-center justify-self-start items-center ml-1">
           {isEditingUsername ? (<>
             <div className="relative w-12 h-12">
             <img
@@ -123,7 +121,6 @@ const Header = ({ rightIcon }: HeaderProps) => {
             {<CancelIcon/>}
           </button>}
         </div>
-      )}
     </div>
   );
 };

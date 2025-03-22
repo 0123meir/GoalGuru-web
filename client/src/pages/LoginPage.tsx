@@ -61,7 +61,7 @@ export const LoginPage = () => {
       });
 
       setTokens(response.data.accessToken, response.data.refreshToken);
-      setUserId(response.data._id)
+      setUserId(response.data.id)
       setUsername(response.data.username);
       setUserProfileImage(response.data.profileImage)
       setGoogleAuth(true);

@@ -262,11 +262,11 @@ router.post("/google", async (req: Request, res: Response) => {
       audience: process.env.GOOGLE_CLIENT_ID,
     });
 
-    const { email, name, sub } = ticket.getPayload()!;
+    const { email, name, sub, picture } = ticket.getPayload()!;
 
     let user = await User.findOne({ email });
     if (!user) {
-      user = new User({ username: name, email, googleId: sub });
+      user = new User({ username: name, email, googleId: sub, profileImage: picture });
       await user.save();
     }
 
@@ -283,7 +283,7 @@ router.post("/google", async (req: Request, res: Response) => {
     user.tokens.push(refreshToken);
     await user.save();
 
-    res.json({ accessToken, refreshToken });
+    res.json({ accessToken, refreshToken, username: name, id: user.id, email: user.email, profileImage: formatProfileImage(user.profileImage) });
     return;
   } catch (error) {
     console.error("Error during Google authentication:", error);

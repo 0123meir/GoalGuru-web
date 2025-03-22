@@ -47,8 +47,8 @@ const PostItem = ({
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center">
           <img
-            src={getProfilePhoto()}
-            alt={post.poster.username}
+            src={getProfilePhoto() || defaultUserImage}
+            alt={""}
             className="w-10 h-10 rounded-full object-cover"
           />
           <div className="ml-3">
