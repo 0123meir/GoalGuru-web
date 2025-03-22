@@ -10,19 +10,12 @@ import {
   getUserById,
   updateUserById,
 } from "../DAL/users";
+import sharp from "sharp";
+import { formatProfileImage, profileImagesDirectory } from "../config/config";
 
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, "../../image_storage/profile_images");
-
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
+const storage = multer.memoryStorage()
 
 const upload = multer({ storage });
 
@@ -39,7 +32,7 @@ const extractUserProps = (user: User) => ({
   username: user.username,
   email: user.email,
   tokens: user.tokens,
-  profileImage: user.profileImage,
+  profileImage: formatProfileImage(user.profileImage),
 });
 
 router.get(
@@ -119,12 +112,25 @@ router.put(
         res.status(400).json({ error: "Incorrect ID format" });
         return;
       }
+
+      let newImage: string | undefined = undefined;
+      if (req.file) {
+        const imagePath = path.join(
+          profileImagesDirectory,
+          `${Date.now()}-${req.file.originalname}`
+        );
+        await sharp(req.file.buffer)
+          .resize(800, 800, { fit: "inside" })
+          .toFile(imagePath);
+          newImage = imagePath;
+      }
+
       const updatedUser = await updateUserById(
         id,
         username,
         email,
         password,
-        profileImage
+        newImage
       ); 
       if (!updatedUser) {
         res.status(400).json({ error: "User not found" });

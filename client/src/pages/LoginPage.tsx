@@ -21,7 +21,8 @@ export const LoginPage = () => {
   const [error, setError] = useState<string | undefined>(undefined);
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const serverId = import.meta.env.VITE_SERVER_URL;
-  const { setUsername, setGoogleAuth, setUserId, setUserProfileImage } = useUserStore();
+  const { setUsername, setGoogleAuth, setUserId, setUserProfileImage } =
+    useUserStore();
 
   const navigate = useNavigate();
   const { setTokens } = useAuthTokens();
@@ -41,7 +42,7 @@ export const LoginPage = () => {
       setTokens(response.data.accessToken, response.data.refreshToken);
       setUserId(response.data.id);
       setUsername(response.data.username);
-      setUserProfileImage(response.data.profileImage)
+      setUserProfileImage(response.data.profileImage);
 
       setGoogleAuth(false);
 
@@ -61,9 +62,9 @@ export const LoginPage = () => {
       });
 
       setTokens(response.data.accessToken, response.data.refreshToken);
-      setUserId(response.data._id)
+      setUserId(response.data.id);
       setUsername(response.data.username);
-      setUserProfileImage(response.data.profileImage)
+      setUserProfileImage(response.data.profileImage);
       setGoogleAuth(true);
 
       navigate("/home");
@@ -96,7 +97,7 @@ export const LoginPage = () => {
                 placeholder="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 pl-4 border rounded-full outline-none"
               />
             )}
             <input
@@ -104,14 +105,14 @@ export const LoginPage = () => {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 pl-4 border rounded-full"
+              className="w-full p-2 pl-4 border rounded-full outline-none"
             />
             <input
               type="password"
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-2 pl-4 border rounded-full"
+              className="w-full p-2 pl-4 border rounded-full outline-none"
             />
             <div className="flex items-center gap-2">
               <button

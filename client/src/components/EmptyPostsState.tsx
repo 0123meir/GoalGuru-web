@@ -8,7 +8,8 @@ const EmptyPostsState = () => {
       </div>
       <h3 className="text-xl font-medium text-gray-800 mb-2">No posts yet</h3>
       <p className="text-gray-600 max-w-md">
-        Looks like there aren't any posts here yet. Why not create one to get started?
+        Looks like there aren't any posts here yet. Why not create one to get
+        started?
       </p>
     </div>
   );

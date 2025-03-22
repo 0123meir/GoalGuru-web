@@ -3,6 +3,7 @@
 */node_modules/
 */build/
 data
+images_storage
 
 # Logs
 logs

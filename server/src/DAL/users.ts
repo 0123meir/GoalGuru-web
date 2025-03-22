@@ -48,7 +48,7 @@ const updateUserById = async (
 ): Promise<any> => {
   if (username) {
     const existingUser = await User.findOne({ username });
-    if (existingUser) {
+    if (existingUser && existingUser._id.toString() !== userId) {
       throw new Error("Username already exists");
     }
   }
