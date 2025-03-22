@@ -53,9 +53,7 @@ export const useGoalApi = () => {
           name: updates.name,
         });
         setGoals(
-          goals.map((goal) =>
-            goal.id === id ? (updates as Goal) : goal
-          )
+          goals.map((goal) => (goal.id === id ? (updates as Goal) : goal))
         );
       } catch (error) {
         console.error("Failed to update goal", error);
@@ -94,7 +92,6 @@ export const useGoalApi = () => {
       );
 
       setGoals(newGoals);
-      
     } catch (error) {
       console.error("Failed to toggle steps", error);
     }

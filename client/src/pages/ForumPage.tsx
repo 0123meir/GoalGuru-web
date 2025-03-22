@@ -1,54 +1,59 @@
 import { useCallback, useEffect, useState } from "react";
+import { MdAdd as AddIcon } from "react-icons/md";
+
 import { useUserStore } from "@/store/useUserStore";
+
 import useApiRequests from "@/hooks/useApiRequests";
+
 import Header from "@/components/Header";
 import LoadingScreen from "@/components/LoadingScreen";
+
 import { Post } from "@/types/forum";
+
 import CreateEditPostForm from "../components/CreateEditPostForm";
+import CreatePostButton from "../components/CreatePostButton";
 import PostList from "../components/PostList";
 import PostTabs from "../components/PostTabs";
-import CreatePostButton from "../components/CreatePostButton";
-
-import {MdAdd as AddIcon} from 'react-icons/md'
 
 export const ForumPage = () => {
   type Tab = "myPosts" | "Explore";
   const [activeTab, setActiveTab] = useState<Tab>("myPosts");
   const [posts, setPosts] = useState<Post[]>([]);
-  const [page, setPage] = useState<number>(1)
-  const [showPageCounter, setShowPageCounter] = useState<boolean>(true)
+  const [page, setPage] = useState<number>(1);
+  const [showPageCounter, setShowPageCounter] = useState<boolean>(true);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const { userId, username, userProfileImage } = useUserStore();
-  const [key, setKey] = useState<number>(0)
+  const [key, setKey] = useState<number>(0);
   const api = useApiRequests();
   const PAGINATION_LIMIT = 5;
 
   const fetchPosts = useCallback(async () => {
     try {
-      const postsRes = await api.get(`/posts/?page=${page}&limit=${PAGINATION_LIMIT}`);
-      setPosts(prev => [...prev,...postsRes.data.posts]);
-      setShowPageCounter(postsRes.data.hasMore)
+      const postsRes = await api.get(
+        `/posts/?page=${page}&limit=${PAGINATION_LIMIT}`
+      );
+      setPosts((prev) => [...prev, ...postsRes.data.posts]);
+      setShowPageCounter(postsRes.data.hasMore);
       setLoading(false);
     } catch (err) {
       console.error(err);
       setLoading(false);
     }
-  },[page]);
-
+  }, [page]);
 
   useEffect(() => {
-  if (key !== 0) {
-    fetchPosts();
-  }
-  }, [fetchPosts,key]);
+    if (key !== 0) {
+      fetchPosts();
+    }
+  }, [fetchPosts, key]);
 
-  useEffect(()=> {
-    setPosts([])
-    setPage(1)
-    setKey(prevKey => prevKey + 1);
-  },[username, userProfileImage])
+  useEffect(() => {
+    setPosts([]);
+    setPage(1);
+    setKey((prevKey) => prevKey + 1);
+  }, [username, userProfileImage]);
 
   const togglePostLike = async (postId: string) => {
     const post = posts?.find((post) => post._id === postId);
@@ -101,7 +106,7 @@ export const ForumPage = () => {
           },
         });
         console.log(res.data);
-        
+
         // Update the post in the state
         setPosts((prevPosts) =>
           prevPosts?.map((post) =>
@@ -179,18 +184,18 @@ export const ForumPage = () => {
   if (loading) {
     return <LoadingScreen text="Please wait while we search for posts." />;
   }
-  
+
   return (
     <div className="flex flex-col bg-gray-50 min-h-screen">
       <Header rightIcon={"todo"} />
-      
+
       <CreateEditPostForm
         handleSubmit={handlePostSubmit}
         isOpen={isModalOpen}
         onClose={handleModalClose}
         post={editingPost}
       />
-      
+
       <div className="sticky top-0 z-10 bg-white shadow-sm">
         <div className="max-w-4xl mx-auto w-full relative">
           <PostTabs activeTab={activeTab} onTabChange={setActiveTab} />
@@ -201,27 +206,41 @@ export const ForumPage = () => {
       <div className="flex-1 overflow-y-auto pt-4 pb-20 justify-items-center">
         {activeTab === "myPosts" && (
           <>
-          <PostList
-            posts={getOwnPosts()}
-            togglePostLike={togglePostLike}
-            onCommentSubmit={handleCommentSubmit}
-            onDeletePost={deletePost}
-            onEditPost={handleEditPost}
-            currentUserId={userId}
+            <PostList
+              posts={getOwnPosts()}
+              togglePostLike={togglePostLike}
+              onCommentSubmit={handleCommentSubmit}
+              onDeletePost={deletePost}
+              onEditPost={handleEditPost}
+              currentUserId={userId}
             />
-            {showPageCounter && getOwnPosts().length > 0 && <button className="hover:bg-slate-300 rounded-full my-3 text-3xl" onClick={()=>setPage(prev => prev + 1)}><AddIcon/></button>}
-            </>
+            {showPageCounter && getOwnPosts().length > 0 && (
+              <button
+                className="hover:bg-slate-300 rounded-full my-3 text-3xl"
+                onClick={() => setPage((prev) => prev + 1)}
+              >
+                <AddIcon />
+              </button>
+            )}
+          </>
         )}
         {activeTab === "Explore" && (
           <>
-          <PostList
-            posts={getFriendsPosts()}
-            togglePostLike={togglePostLike}
-            onCommentSubmit={handleCommentSubmit}
-            currentUserId={userId}
+            <PostList
+              posts={getFriendsPosts()}
+              togglePostLike={togglePostLike}
+              onCommentSubmit={handleCommentSubmit}
+              currentUserId={userId}
             />
-            {showPageCounter && getFriendsPosts().length > 0 && <button className="hover:bg-slate-300 rounded-full my-3 text-3xl" onClick={()=>setPage(prev => prev + 1)}><AddIcon/></button>}
-            </>
+            {showPageCounter && getFriendsPosts().length > 0 && (
+              <button
+                className="hover:bg-slate-300 rounded-full my-3 text-3xl"
+                onClick={() => setPage((prev) => prev + 1)}
+              >
+                <AddIcon />
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>

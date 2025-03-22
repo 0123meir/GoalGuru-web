@@ -36,9 +36,7 @@ export const useStepApi = () => {
           ? ({
               ...goal,
               steps: goal.steps.map((step) =>
-                step.id === updates.id
-                  ? { ...updates, id: updates.id }
-                  : step
+                step.id === updates.id ? { ...updates, id: updates.id } : step
               ),
             } as Goal)
           : goal

@@ -1,4 +1,3 @@
-
 const AppLogo = () => {
   return (
     <svg

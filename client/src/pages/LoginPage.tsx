@@ -21,7 +21,8 @@ export const LoginPage = () => {
   const [error, setError] = useState<string | undefined>(undefined);
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const serverId = import.meta.env.VITE_SERVER_URL;
-  const { setUsername, setGoogleAuth, setUserId, setUserProfileImage } = useUserStore();
+  const { setUsername, setGoogleAuth, setUserId, setUserProfileImage } =
+    useUserStore();
 
   const navigate = useNavigate();
   const { setTokens } = useAuthTokens();
@@ -41,7 +42,7 @@ export const LoginPage = () => {
       setTokens(response.data.accessToken, response.data.refreshToken);
       setUserId(response.data.id);
       setUsername(response.data.username);
-      setUserProfileImage(response.data.profileImage)
+      setUserProfileImage(response.data.profileImage);
 
       setGoogleAuth(false);
 
@@ -61,9 +62,9 @@ export const LoginPage = () => {
       });
 
       setTokens(response.data.accessToken, response.data.refreshToken);
-      setUserId(response.data.id)
+      setUserId(response.data.id);
       setUsername(response.data.username);
-      setUserProfileImage(response.data.profileImage)
+      setUserProfileImage(response.data.profileImage);
       setGoogleAuth(true);
 
       navigate("/home");
