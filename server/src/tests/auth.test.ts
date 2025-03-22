@@ -1,31 +1,33 @@
 import { config } from "dotenv";
 config();
 process.env.DATABASE_URL = "mongodb://127.0.0.1:27017/testauthdb";
-process.env.JWT_TOKEN_EXPIRATION = "3000";
+process.env.JWT_TOKEN_EXPIRATION = "6000";
 
 import { connect, connection } from "mongoose";
 import app from "../app";
 import request from "supertest";
-
+const RANDOM_NUMBER = Math.floor(Math.random() * 10000000000)
 let accessToken: string;
 let refreshToken: string;
-const mockUser = {
-  username: "123meir",
-  email: "meir@mail.com",
-  password: "superSecretPassword",
-};
+let mockUser: { name: string; email: string; password: string };
 beforeAll(async () => {
   await connect(process.env.DATABASE_URL);
+  mockUser = {
+    name: `meir${RANDOM_NUMBER}`,
+    email: `meir${RANDOM_NUMBER}@mail.com`,
+    password: "superSecretPassword",
+  };
 });
 
 afterAll(async () => {
   await connection.db.dropDatabase();
   await connection.close();
 });
+
 describe("Restrict access without Auth / ", () => {
   it("should respond with error", async () => {
     const response = await request(app).get("/posts");
-    expect(response.statusCode).toEqual(403);
+    expect(response.statusCode).toEqual(401);
   });
 });
 describe("Register and Login", () => {
@@ -38,13 +40,15 @@ describe("Register and Login", () => {
     expect(response.statusCode).toEqual(400);
     expect(response.body.error).toEqual("Missing required fields");
   });
-  it("should return 400 if username or email already exists", async () => {
+  it("should return 400 if email already exists", async () => {
     const res = await request(app).post("/auth/register").send(mockUser);
-
     expect(res.statusCode).toBe(400);
   });
   it("should login user", async () => {
-    const response = await request(app).post("/auth/login").send(mockUser);
+    const response = await request(app).post("/auth/login").send({
+      email: mockUser.email,
+      password: mockUser.password,
+    });
 
     accessToken = response.body.accessToken;
     refreshToken = response.body.refreshToken;
@@ -101,13 +105,13 @@ describe("Token access", () => {
 
 describe("Timeout and Refresh", () => {
   it("should timeout access", async () => {
-    await new Promise((r) => setTimeout(r, 3.1 * 1000));
+    await new Promise((r) => setTimeout(r, 6000));
     const response = await request(app)
       .get("/posts")
       .set("Authorization", "Bearer " + accessToken);
 
     expect(response.statusCode).toEqual(403);
-  }, 3200);
+  }, 8000);
 
   it("should send Refresh Token", async () => {
     const response = await request(app)
