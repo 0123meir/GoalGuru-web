@@ -1,35 +1,44 @@
-import { useState } from "react";
-import { MdSend } from "react-icons/md";
+import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useState } from "react";
 
 interface CommentInputProps {
   onSubmit: (content: string) => void;
 }
 
 const CommentInput = ({ onSubmit }: CommentInputProps) => {
-  const [content, setContent] = useState("");
+  const [comment, setComment] = useState("");
 
-  const handleCommentSubmit = () => {
-    onSubmit(content);
-    setContent("");
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (comment.trim()) {
+      onSubmit(comment);
+      setComment("");
+    }
   };
 
   return (
-    <div className="flex mt-4 w-full">
-      <textarea
-        className="border rounded-l p-2 mb-2 flex-grow resize-none h-16 focus:border-blue-500 focus:outline-none"
+    <form onSubmit={handleSubmit} className="flex items-center">
+      <input
+        type="text"
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
         placeholder="Add a comment..."
-        value={content}
-        maxLength={200}
-        onChange={(e) => setContent(e.target.value)}
-        required
+        className="flex-1 bg-white border border-gray-300 rounded-full py-2 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       />
       <button
-        className="bg-blue-500 text-white p-4 rounded-r flex items-center justify-center h-16"
-        onClick={handleCommentSubmit}
+        type="submit"
+        disabled={!comment.trim()}
+        className={`ml-2 p-2 rounded-full focus:outline-none ${
+          comment.trim()
+            ? "text-blue-500 hover:bg-blue-50"
+            : "text-gray-400 cursor-not-allowed"
+        }`}
       >
-        <MdSend />
+        <FontAwesomeIcon icon={faPaperPlane} size="sm" />
       </button>
-    </div>
+    </form>
   );
 };
 

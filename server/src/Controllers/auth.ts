@@ -121,6 +121,7 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
       email: user.email,
       accessToken,
       refreshToken,
+      profileImage: user.profileImage,
     });
     return;
   } catch (err: any) {
