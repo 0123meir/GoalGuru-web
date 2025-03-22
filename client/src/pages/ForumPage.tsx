@@ -1,15 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
-
+import { useUserStore } from "@/store/useUserStore";
 import useApiRequests from "@/hooks/useApiRequests";
-import useLocalStorage from "@/hooks/useLocalStorage";
-
 import Header from "@/components/Header";
 import LoadingScreen from "@/components/LoadingScreen";
-
 import { Post } from "@/types/forum";
+import CreateEditPostForm from "../components/CreateEditPostForm";
+import PostList from "../components/PostList";
+import PostTabs from "../components/PostTabs";
+import CreatePostButton from "../components/CreatePostButton";
 
-import NewPostForm from "../components/NewPostForm";
-import { Posts } from "../components/Posts";
 import {MdAdd as AddIcon} from 'react-icons/md'
 
 export const ForumPage = () => {
@@ -20,11 +19,11 @@ export const ForumPage = () => {
   const [showPageCounter, setShowPageCounter] = useState<boolean>(true)
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { getItem } = useLocalStorage("userId");
-  const userId = getItem();
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const { userId, username, userProfileImage } = useUserStore();
+  const [key, setKey] = useState<number>(0)
   const api = useApiRequests();
-
-  const PAGINATION_LIMIT = 10;
+  const PAGINATION_LIMIT = 5;
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -40,12 +39,16 @@ export const ForumPage = () => {
 
 
   useEffect(() => {
+  if (key !== 0) {
     fetchPosts();
-  }, [fetchPosts]);
-  
-  const handleTabChange = (tab: Tab) => {
-    setActiveTab(tab);
-  };
+  }
+  }, [fetchPosts,key]);
+
+  useEffect(()=> {
+    setPosts([])
+    setPage(1)
+    setKey(prevKey => prevKey + 1);
+  },[username, userProfileImage])
 
   const togglePostLike = async (postId: string) => {
     const post = posts?.find((post) => post._id === postId);
@@ -66,9 +69,9 @@ export const ForumPage = () => {
 
     try {
       if (isLikedByUser) {
-        await likePost(postId);
+        await api.post("/likes", { postId });
       } else {
-        await unlikePost(postId);
+        await api.delete(`/likes/${postId}`);
       }
       setPosts(updatedPosts);
     } catch (error) {
@@ -76,40 +79,78 @@ export const ForumPage = () => {
     }
   };
 
-  const likePost = async (postId: string) => {
+  const deletePost = async (postId: string) => {
     try {
-      await api.post("/likes", { postId });
+      await api.delete(`/posts/${postId}`);
+      setPosts((prevPosts) => prevPosts?.filter((post) => post._id !== postId));
     } catch (error) {
-      console.error(error);
-      throw new Error("Failed to like post");
+      console.error("Failed to delete post with id:", postId, error);
     }
   };
 
-  const unlikePost = async (postId: string) => {
+  const handlePostSubmit = async (
+    postId: string | null,
+    formData: FormData
+  ) => {
     try {
-      await api.delete(`/likes/${postId}`);
+      if (postId) {
+        // Update existing post
+        const res = await api.put(`/posts/${postId}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        console.log(res.data);
+        
+        // Update the post in the state
+        setPosts((prevPosts) =>
+          prevPosts?.map((post) =>
+            post._id === postId
+              ? {
+                  ...post,
+                  description: res.data.post.description,
+                  imageUrls: res.data.post.imageUrls,
+                }
+              : post
+          )
+        );
+      } else {
+        // Create new post
+        const res = await api.post("/posts", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        const newPost: Post = {
+          ...res.data.post,
+          comments: [],
+          isLikedByUser: false,
+          likesCount: 0,
+          poster: {
+            _id: userId,
+            profileImage: userProfileImage,
+            username,
+          },
+        };
+        setPosts((prevPosts) => [newPost, ...(prevPosts || [])]);
+      }
+
+      // Reset the editing state
+      setEditingPost(null);
     } catch (error) {
-      console.error(error);
-      throw new Error("Failed to unlike post");
+      console.error("Error submitting post:", error);
     }
   };
 
-  const handleNewPostSubmit = async (formData: FormData) => {
-    try {
-      const response = await api.post("/posts", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+  const handleEditPost = (post: Post) => {
+    setEditingPost(post);
+    setIsModalOpen(true);
+  };
 
-      const newPost = {
-        ...response.data.post,
-        publishDate: new Date(response.data.post.publishDate),
-      };
-      setPosts((prevPosts) => [newPost, ...(prevPosts)]);
-    } catch (error) {
-      console.error("Error submitting new post:", error);
-    }
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setEditingPost(null);
   };
 
   const handleCommentSubmit = async (postId: string, content: string) => {
@@ -129,81 +170,60 @@ export const ForumPage = () => {
     }
   };
 
+  const getFriendsPosts = () =>
+    posts ? posts.filter((post) => post.poster._id !== userId) : [];
+
+  const getOwnPosts = () =>
+    posts ? posts.filter((post) => post.poster._id === userId) : [];
+
   if (loading) {
     return <LoadingScreen text="Please wait while we search for posts." />;
   }
-
-  function getFriendsPosts() {
-    return posts ? posts?.filter((post) => post._id !== userId) : [];
-  }
-
-  function getOwnPosts() {
-    return posts ? posts?.filter((post) => post.poster._id === userId) : [];
-  }
-
+  
   return (
-    <>
-      <Header rightIcon={"todo"}/>
-      <NewPostForm
-        handleNewPostSubmit={handleNewPostSubmit}
+    <div className="flex flex-col bg-gray-50 min-h-screen">
+      <Header rightIcon={"todo"} />
+      
+      <CreateEditPostForm
+        handleSubmit={handlePostSubmit}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleModalClose}
+        post={editingPost}
       />
-      <div className="flex flex-col bg-gray-100 min-h-screen">
-        <div className="flex my-4 border-b-2 border-gray-300 w-full items-center justify-center top-0 bg-gray-100 z-10">
-          <div className="flex space-x-4">
-            <button
-              className={`px-4 py-2 rounded-t-lg border-b-4 ${
-                activeTab === "myPosts"
-                  ? "border-blue-500 text-blue-500"
-                  : "border-transparent text-gray-500"
-              }`}
-              onClick={() => handleTabChange("myPosts")}
-            >
-              My Posts
-            </button>
-            <button
-              className={`px-4 py-2 rounded-t-lg border-b-4 ${
-                activeTab === "Explore"
-                  ? "border-blue-500 text-blue-500"
-                  : "border-transparent text-gray-500"
-              }`}
-              onClick={() => handleTabChange("Explore")}
-            >
-              Explore Posts
-            </button>
-          </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="absolute ml-4 left-0 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-          >
-            Create New Post
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto justify-items-center">
-          {activeTab === "myPosts" && (
-            <>
-            <Posts
-              posts={getOwnPosts()}
-              togglePostLike={togglePostLike}
-              onCommentSubmit={handleCommentSubmit}
-              />
-               {showPageCounter && <button className="hover:bg-slate-300 rounded-full mb-3 text-3xl" onClick={()=>setPage(prev => prev + 1)}><AddIcon/></button>}
-              </>
-          )}
-          {activeTab === "Explore" && (
-            <>
-            <Posts
-              posts={getFriendsPosts()}
-              togglePostLike={togglePostLike}
-              onCommentSubmit={handleCommentSubmit}
-              />
-              {showPageCounter && <button className="hover:bg-slate-300 rounded-full mb-3 text-3xl" onClick={()=>setPage(prev => prev + 1)}><AddIcon/></button>}
-              </>
-          )}
+      
+      <div className="sticky top-0 z-10 bg-white shadow-sm">
+        <div className="max-w-4xl mx-auto w-full relative">
+          <PostTabs activeTab={activeTab} onTabChange={setActiveTab} />
+          <CreatePostButton onClick={() => setIsModalOpen(true)} />
         </div>
       </div>
-    </>
+
+      <div className="flex-1 overflow-y-auto pt-4 pb-20 justify-items-center">
+        {activeTab === "myPosts" && (
+          <>
+          <PostList
+            posts={getOwnPosts()}
+            togglePostLike={togglePostLike}
+            onCommentSubmit={handleCommentSubmit}
+            onDeletePost={deletePost}
+            onEditPost={handleEditPost}
+            currentUserId={userId}
+            />
+            {showPageCounter && getOwnPosts().length > 0 && <button className="hover:bg-slate-300 rounded-full my-3 text-3xl" onClick={()=>setPage(prev => prev + 1)}><AddIcon/></button>}
+            </>
+        )}
+        {activeTab === "Explore" && (
+          <>
+          <PostList
+            posts={getFriendsPosts()}
+            togglePostLike={togglePostLike}
+            onCommentSubmit={handleCommentSubmit}
+            currentUserId={userId}
+            />
+            {showPageCounter && getFriendsPosts().length > 0 && <button className="hover:bg-slate-300 rounded-full my-3 text-3xl" onClick={()=>setPage(prev => prev + 1)}><AddIcon/></button>}
+            </>
+        )}
+      </div>
+    </div>
   );
 };

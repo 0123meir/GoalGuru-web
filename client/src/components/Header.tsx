@@ -16,9 +16,8 @@ interface HeaderProps {
 const Header = ({ rightIcon }: HeaderProps) => {
   const navigate = useNavigate();
   const { clearTokens } = useAuthTokens();
-  const { username, googleAuth, setUsername } = useUserStore();
+  const { username, googleAuth, setUsername, userId } = useUserStore();
   const { updateUser } = useUserApi();
-  const { getItem } = useLocalStorage("userId");
   const [isEditingUsername, setIsEditingUsername] = useState<boolean>(false);
   const [newUsername, setNewUsername] = useState<string>(username);
   const ICONS_SIZE = 24;
@@ -107,7 +106,7 @@ const Header = ({ rightIcon }: HeaderProps) => {
 
               if (isEditingUsername) {
                 setUsername(newUsername);
-                await updateUser(getItem() as string, newUsername, image);
+                await updateUser(userId, newUsername, image);
                 setIsEditingUsername((prev) => !prev);
               }
             }}

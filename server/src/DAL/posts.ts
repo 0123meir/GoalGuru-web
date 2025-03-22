@@ -137,10 +137,19 @@ const updatePostById = async (id: string, message: string) => {
   );
 };
 
+const deletePostById = async (id: string) => {
+  try {
+    return await Post.findByIdAndDelete(id);
+  } catch (err) {
+    console.error("Post deletion failed: ", err);
+  }
+};
+
 export {
   savePost,
   getRecentPosts,
   getPostsById,
   getPostsByPosterId,
   updatePostById,
+  deletePostById
 };

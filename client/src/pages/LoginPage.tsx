@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom";
 import { useUserStore } from "@/store/useUserStore";
 
 import useAuthTokens from "@/hooks/useAuthTokens";
-import useLocalStorage from "@/hooks/useLocalStorage";
 
 import { APIError } from "@/types/api";
 
@@ -20,10 +19,9 @@ export const LoginPage = () => {
   const [name, setName] = useState<string>("");
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [error, setError] = useState<string | undefined>(undefined);
-  const { setItem } = useLocalStorage("userId");
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const serverId = import.meta.env.VITE_SERVER_URL;
-  const { setUsername, setGoogleAuth, setProfilePhoto } = useUserStore();
+  const { setUsername, setGoogleAuth, setUserId, setUserProfileImage } = useUserStore();
 
   const navigate = useNavigate();
   const { setTokens } = useAuthTokens();
@@ -41,10 +39,11 @@ export const LoginPage = () => {
     try {
       const response = await axios.post(endpoint, payload);
       setTokens(response.data.accessToken, response.data.refreshToken);
-      setItem(response.data.id);
+      setUserId(response.data.id);
       setUsername(response.data.username);
+      setUserProfileImage(response.data.profileImage)
+
       setGoogleAuth(false);
-      setProfilePhoto(response.data.profileImage)
 
       navigate("/home");
     } catch (err) {
@@ -62,7 +61,9 @@ export const LoginPage = () => {
       });
 
       setTokens(response.data.accessToken, response.data.refreshToken);
+      setUserId(response.data._id)
       setUsername(response.data.username);
+      setUserProfileImage(response.data.profileImage)
       setGoogleAuth(true);
 
       navigate("/home");

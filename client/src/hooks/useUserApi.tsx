@@ -3,7 +3,7 @@ import { useUserStore } from "@/store/useUserStore";
 import useApiRequest from "@/hooks/useApiRequests";
 
 export const useUserApi = () => {
-  const { setUsername, setProfilePhoto } = useUserStore();
+  const { setUsername, setUserProfileImage } = useUserStore();
   const api = useApiRequest();
 
   const updateUser = async (id: string, username: string, file: File | undefined = undefined) => {
@@ -20,7 +20,7 @@ export const useUserApi = () => {
       });
 
       setUsername(response.data.username);
-      setProfilePhoto(response.data.profileImage)
+      setUserProfileImage(response.data.profileImage)
     } catch (error) {
       console.error("Failed to update step", error);
     }

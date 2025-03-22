@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import multer from "multer";
 import sharp from "sharp";
 import path from "path";
+import fs from "fs";
 
 import authenticate, {
   AuthenticatedRequest,
@@ -13,6 +14,7 @@ import {
   getPostsById,
   getPostsByPosterId,
   updatePostById,
+  deletePostById,
 } from "../DAL/posts";
 import Post from "../db/postSchema";
 import { getUserById } from "../DAL/users";
@@ -81,8 +83,11 @@ router.post(
         message: "Post saved successfully",
         post: {
           ...addedPost,
-          poster: { username: user.username, profileImage: formatProfileImage(user.profileImage) },
-          imageUrls: imageUrls.map(url => formatPostImage(url)) ?? null,
+          poster: {
+            username: user.username,
+            profileImage: formatProfileImage(user.profileImage),
+          },
+          imageUrls: imageUrls.map((url) => formatPostImage(url)) ?? null,
           likesCount: 0,
           comments: [],
         },
@@ -97,7 +102,6 @@ router.post(
     }
   }
 );
-
 
 router.get(
   "/",
@@ -196,13 +200,15 @@ router.get(
 router.put(
   "/:id",
   authenticate,
-  async (req: Request, res: Response): Promise<void> => {
+  upload.array("images", 4), // Allow up to 4 images in update
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const postId = req.params.id;
       if (!mongoose.Types.ObjectId.isValid(postId)) {
         res.status(400).json({ error: "Invalid post ID" });
         return;
       }
+      
       const { description } = req.body;
       if (!description) {
         res.status(400).json({ error: "Required body not provided" });
@@ -213,18 +219,135 @@ router.put(
         return;
       }
 
-      const updatedPost = await updatePostById(postId, description);
-      if (!updatedPost) {
+      // Get the existing post
+      const existingPost = await getPostsById(postId);
+      if (!existingPost) {
         res.status(404).json({ error: "Post not found" });
         return;
       }
-      res.json(updatedPost);
+
+      // Check if user is authorized to update this post
+      if (existingPost.posterId.toString() !== req.user.id) {
+        res.status(403).json({ error: "Unauthorized to update this post" });
+        return;
+      }
+
+      // Parse the existing images the user wants to keep
+      let keepExistingImages: string[] = [];
+      if (req.body.existingImages) {
+        try {
+          keepExistingImages = JSON.parse(req.body.existingImages);
+        } catch (err) {
+          console.error("Error parsing existingImages:", err);
+          res.status(400).json({ error: "Invalid existingImages format" });
+          return;
+        }
+      }
+
+      // Determine which images to delete
+      const imagesToDelete = existingPost.imageUrls.filter(
+        url => !keepExistingImages.includes(url)
+      );
+
+      // Delete images that were removed
+      for (const imageUrl of imagesToDelete) {
+        try {
+          if (fs.existsSync(imageUrl)) {
+            fs.unlinkSync(imageUrl);
+          }
+        } catch (err) {
+          console.error(`Failed to delete image ${imageUrl}:`, err);
+        }
+      }
+
+      // Process new uploaded images
+      let newImageUrls: string[] = [];
+      if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+        for (const file of req.files as Express.Multer.File[]) {
+          const imagePath = path.join(
+            postImagesDirectory,
+            `${Date.now()}-${file.originalname}`
+          );
+          await sharp(file.buffer)
+            .resize(800, 800, { fit: "inside" })
+            .toFile(imagePath);
+          newImageUrls.push(imagePath);
+        }
+      }
+
+      // Combine kept existing images with new images
+      const imageUrls = [...keepExistingImages, ...newImageUrls];
+
+      // Update the post in database
+      const updatedPost = await Post.findByIdAndUpdate(
+        postId,
+        {
+          description,
+          imageUrls
+        },
+        { new: true }
+      );
+
+      const user = await getUserById(req.user.id);
+      
+      // Format the response
+      const formattedPost = {
+        ...updatedPost.toObject(),
+        poster: {
+          username: user.username,
+          profileImage: formatProfileImage(user.profileImage)
+        },
+        imageUrls: updatedPost.imageUrls.map(url => formatPostImage(url)) || [],
+      };
+
+      res.json({
+        message: "Post updated successfully",
+        post: formattedPost
+      });
       return;
     } catch (err) {
       console.error("Error updating post by ID:", err);
       res
         .status(500)
         .json({ error: "Failed to update post by ID", details: err.message });
+      return;
+    }
+  }
+);
+
+router.delete(
+  "/:id",
+  authenticate,
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const postId = req.params.id;
+
+      if (!mongoose.Types.ObjectId.isValid(postId)) {
+        res.status(400).json({ error: "Invalid post ID" });
+        return;
+      }
+
+      const post = await getPostsById(postId);
+
+      if (!post) {
+        res.status(404).json({ error: "Post not found" });
+        return;
+      }
+
+      if (post.posterId.toString() !== req.user.id) {
+        res.status(403).json({ error: "Unauthorized to delete this post" });
+        return;
+      }
+
+      await deletePostById(postId);
+
+      res.status(200).json({ message: "Post deleted successfully" });
+      return;
+    } catch (err) {
+      console.error("Error deleting post by ID:", err);
+      res
+        .status(500)
+        .json({ error: "Failed to delete post by ID", details: err.message });
       return;
     }
   }
