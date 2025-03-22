@@ -10,6 +10,7 @@ import { Post } from "@/types/forum";
 
 import NewPostForm from "../components/NewPostForm";
 import { Posts } from "../components/Posts";
+import { useUserStore } from "@/store/useUserStore";
 
 export const ForumPage = () => {
   type Tab = "myPosts" | "Explore";
@@ -86,6 +87,15 @@ export const ForumPage = () => {
     }
   };
 
+  const deletePost = async (postId: string) => {
+    try {
+      await api.delete(`/posts/${postId}`);
+      setPosts((prevPosts) => prevPosts?.filter((post) => post._id !== postId));
+    } catch (error) {
+      console.error("Failed to delete post with id:", postId, error);
+    }
+  };
+
   const handleNewPostSubmit = async (formData: FormData) => {
     try {
       const response = await api.post("/posts", formData, {
@@ -94,9 +104,12 @@ export const ForumPage = () => {
         },
       });
 
-      const newPost = {
+      const newPost: Post = {
         ...response.data.post,
-        publishDate: new Date(response.data.post.publishDate),
+        publishTime: new Date(response.data.post.publishDate),
+        comments: [],
+        isLikedByUser: false,
+        
       };
       setPosts((prevPosts) => [newPost, ...(prevPosts || [])]);
     } catch (error) {
@@ -121,18 +134,15 @@ export const ForumPage = () => {
     }
   };
 
+  const getFriendsPosts = () => 
+    posts ? posts.filter((post) => post._id !== userId) : [];
+
+  const getOwnPosts = () => 
+    posts ? posts.filter((post) => post.poster._id === userId) : [];
+
   if (loading) {
     return <LoadingScreen text="Please wait while we search for posts." />;
   }
-
-  function getFriendsPosts() {
-    return posts ? posts?.filter((post) => post._id !== userId) : [];
-  }
-
-  function getOwnPosts() {
-    return posts ? posts?.filter((post) => post.poster._id === userId) : [];
-  }
-
   return (
     <>
       <Header rightIcon={"todo"}/>
@@ -179,6 +189,7 @@ export const ForumPage = () => {
               posts={getOwnPosts()}
               togglePostLike={togglePostLike}
               onCommentSubmit={handleCommentSubmit}
+              onDeletePost={deletePost}
             />
           )}
           {activeTab === "Explore" && (
@@ -186,6 +197,7 @@ export const ForumPage = () => {
               posts={getFriendsPosts()}
               togglePostLike={togglePostLike}
               onCommentSubmit={handleCommentSubmit}
+            
             />
           )}
         </div>

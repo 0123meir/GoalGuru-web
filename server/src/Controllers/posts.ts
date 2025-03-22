@@ -13,6 +13,7 @@ import {
   getPostsById,
   getPostsByPosterId,
   updatePostById,
+  deletePostById,
 } from "../DAL/posts";
 import Post from "../db/postSchema";
 import { getUserById } from "../DAL/users";
@@ -219,6 +220,44 @@ router.put(
       res
         .status(500)
         .json({ error: "Failed to update post by ID", details: err.message });
+      return;
+    }
+  }
+);
+
+router.delete(
+  "/:id",
+  authenticate,
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const postId = req.params.id;
+
+      if (!mongoose.Types.ObjectId.isValid(postId)) {
+        res.status(400).json({ error: "Invalid post ID" });
+        return;
+      }
+
+      const post = await getPostsById(postId);
+
+      if (!post) {
+        res.status(404).json({ error: "Post not found" });
+        return;
+      }
+
+      if (post.posterId.toString() !== req.user.id) {
+        res.status(403).json({ error: "Unauthorized to delete this post" });
+        return;
+      }
+
+      await deletePostById(postId);
+
+      res.status(200).json({ message: "Post deleted successfully" });
+      return;
+    } catch (err) {
+      console.error("Error deleting post by ID:", err);
+      res
+        .status(500)
+        .json({ error: "Failed to delete post by ID", details: err.message });
       return;
     }
   }

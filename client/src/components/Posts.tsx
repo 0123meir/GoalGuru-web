@@ -13,12 +13,14 @@ interface PostsProps {
   posts: Post[];
   togglePostLike: (postId: string) => void;
   onCommentSubmit: (postId: string, content: string) => void;
+  onDeletePost?: (postId: string) => void;
 }
 
 export const Posts = ({
   posts,
   togglePostLike,
   onCommentSubmit,
+  onDeletePost
 }: PostsProps) => {
   const formatPublishTime = (publishTime: Date): string => {
     return formatDistanceToNow(publishTime);
@@ -47,19 +49,47 @@ export const Posts = ({
           key={post._id}
           className="w-full bg-white rounded-lg shadow-md p-4 mb-4"
         >
-          <div className="flex items-center mb-4">
-            <img
-              src={getProfilePhoto(post)}
-              alt={"User"}
-              className="w-12 h-12 rounded-full mr-4"
-            />
-            <div>
-              <div className="font-bold">{post.poster.username}</div>
-              <div className="text-gray-500 text-sm">
-                {formatPublishTime(new Date(post.publishTime))}
+          {/* Header Section */}
+          <div className="flex items-center justify-between mb-4">
+            {/* Profile Section */}
+            <div className="flex items-center">
+              <img
+                src={getProfilePhoto(post)}
+                alt={"User"}
+                className="w-12 h-12 rounded-full mr-4"
+              />
+              <div>
+                <div className="font-bold">{post.poster.username}</div>
+                <div className="text-gray-500 text-sm">
+                  {formatPublishTime(new Date(post.publishTime))}
+                </div>
               </div>
             </div>
+
+            {/* Delete Button */}
+            {onDeletePost && <button
+              onClick={() => onDeletePost(post._id)}
+              className="text-red-500 hover:text-red-700"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>}
+            
           </div>
+
+          {/* Post Content */}
           <div className="mb-4">{post.description}</div>
           {post.imageUrls && (
             <div className="w-full flex justify-center mb-4">
